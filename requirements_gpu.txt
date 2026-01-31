@@ -1,0 +1,51 @@
+# Core Requirements
+ultralytics==8.1.0
+torch==2.1.0+cu118  # CUDA 11.8 version
+torchvision==0.16.0+cu118
+opencv-python-headless==4.8.1.78
+numpy==1.24.3
+pillow==10.1.0
+
+# Streamlit Dashboard
+streamlit==1.29.0
+plotly==5.18.0
+pandas==2.1.4
+
+# Visualization
+matplotlib==3.7.2
+seaborn==0.13.0
+
+# Utilities
+pyyaml==6.0.1
+tqdm==4.66.1
+scikit-learn==1.3.2
+
+# GPU Acceleration (Optional)
+nvidia-tensorrt==8.6.1  # For maximum performance
+onnx==1.14.1
+onnxruntime-gpu==1.16.1
+
+# For video processing
+opencv-python==4.8.1.78
+
+# [file name]: requirements_recon.txt
+# Requirements for Autonomous Multi-Target Reconnaissance System
+
+# Core dependencies
+scipy>=1.11.0
+
+# Data processing
+scikit-learn>=1.3.0
+scikit-image>=0.21.0
+
+# Utilities
+psutil>=5.9.0
+
+# Optional for advanced features
+filterpy>=1.4.5  # For Kalman filtering (advanced tracking)
+sort-track>=0.0.0  # For SORT tracking algorithm
+lap>=0.4.0  # For linear assignment problem solving
+
+# Logging and reporting
+pyyaml>=6.0
+json5>=0.9.0
