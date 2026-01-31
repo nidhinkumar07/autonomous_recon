@@ -7,7 +7,7 @@ from torchvision import models, transforms
 from PIL import Image
 import torchvision.transforms as T
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore') 
 
 # COCO class names for different models
 COCO_CLASSES = [
@@ -21,7 +21,7 @@ COCO_CLASSES = [
     'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
     'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse',
     'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
-    'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
+    'refrigerator', 'book', 'clock', 'vase','scissors', 'teddy bear', 'hair drier',
     'toothbrush'
 ]
 
