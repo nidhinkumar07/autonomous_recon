@@ -312,128 +312,312 @@ st.set_page_config(
 import warnings
 warnings.filterwarnings('ignore')
 
-# Custom CSS for better styling
+# Custom CSS for SaaS aesthetics
 st.markdown("""
 <style>
+    /* Base typography - Clean sans-serif stack */
+    html, body, [class*="css"] {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    /* Reduce container padding */
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    .st-emotion-cache-1jicfl2 {
+        padding-top: 1.5rem;
+    }
+    
+    /* Main header positioning */
     .main-header {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
         color: #1E3A8A;
-        text-align: center;
-        margin-bottom: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        padding-top: 0;
+        text-align: left;
     }
-    .sub-header {
-        font-size: 1.5rem;
+    
+    /* Subheaders */
+    .section-header {
+        font-size: 1.25rem;
         color: #374151;
+        font-weight: 700;
+        margin-top: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .subsection-header {
+        font-size: 1rem;
+        color: #4B5563;
+        font-weight: 500;
         margin-top: 1rem;
+        margin-bottom: 0.5rem;
     }
-    .model-card {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #E5E7EB;
+    
+    /* Card styling */
+    .settings-card {
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
         margin-bottom: 1rem;
-        background-color: #F9FAFB;
+        background-color: #FFFFFF;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
+    
+    .info-card {
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+        margin-bottom: 1rem;
+        background-color: #FFFFFF;
+    }
+    
     .stats-card {
-        background-color: #EFF6FF;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #3B82F6;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+        background-color: #FFFFFF;
+        margin-bottom: 1rem;
     }
-    .detection-box {
-        border: 2px solid #10B981;
-        position: absolute;
-        font-weight: bold;
-        color: white;
-        text-shadow: 1px 1px 2px black;
+    
+    .processing-card {
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+        background-color: #F8FAFC;
+        margin-bottom: 1.5rem;
     }
-    .stButton button {
-        background-color: #3B82F6;
-        color: white;
-        border-radius: 5px;
-        padding: 0.5rem 1rem;
+    
+    .tracking-card {
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+        background-color: #FFFFFF;
+        margin-bottom: 1rem;
+    }
+    
+    /* Tabs - Underline system */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0;
+        border-bottom: 1px solid #E2E8F0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease;
+        margin-right: 0.5rem;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: transparent;
+        border-bottom: 2px solid #2563EB;
+        color: #2563EB;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #F1F5F9;
+        border-bottom: 2px solid #93C5FD;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        width: 100%;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
         margin: 0.25rem 0;
         border: none;
-        font-weight: bold;
+        font-weight: 500;
+        transition: all 0.2s ease;
     }
+    
+    .primary-button button {
+        background-color: #2563EB;
+        color: white;
+    }
+    
+    .primary-button button:hover {
+        background-color: #1D4ED8;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+    
+    .secondary-button button {
+        background-color: #6B7280;
+        color: white;
+    }
+    
+    .secondary-button button:hover {
+        background-color: #4B5563;
+        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+    }
+    
     .stop-button button {
-        background-color: #EF4444 !important;
+        background-color: #DC2626 !important;
         color: white !important;
     }
-    .processing-info {
-        background-color: #FEF3C7;
+    
+    .stop-button button:hover {
+        background-color: #B91C1C !important;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2) !important;
+    }
+    
+    /* Sidebar spacing */
+    .sidebar .sidebar-content {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    .sidebar .element-container {
+        margin-bottom: 1rem;
+    }
+    
+    /* Checkbox and slider spacing */
+    .stCheckbox > div {
+        padding: 0.5rem 0;
+    }
+    
+    .stCheckbox label {
+        font-weight: 400;
+    }
+    
+    .stSlider > div {
+        padding: 0.75rem 0;
+    }
+    
+    /* Metrics grid - Responsive */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .metric-container {
+        text-align: center;
         padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #F59E0B;
-        margin: 1rem 0;
+        background-color: #F8FAFC;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
     }
+    
+    /* Status indicators */
     .detection-status {
-        background-color: #D1FAE5;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        margin: 0.5rem 0;
-        border-left: 4px solid #10B981;
-    }
-    .tab-content {
-        animation: fadeIn 0.5s;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    .summary-box {
-        background-color: #F3F4F6;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-        border-left: 4px solid #6B7280;
-    }
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.25rem 0;
-        border-bottom: 1px solid #E5E7EB;
-    }
-    .summary-item:last-child {
-        border-bottom: none;
-    }
-    .summary-class {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
         font-weight: 500;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
     }
-    .summary-count {
-        font-weight: bold;
-        color: #1E3A8A;
-    }
-    .unique-objects {
-        background-color: #E0F2FE;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        margin: 0.5rem 0;
-        border-left: 4px solid #0EA5E9;
-    }
-    .object-details {
-        background-color: #FCE7F3;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-        border-left: 4px solid #DB2777;
-    }
-    .object-id {
-        font-family: monospace;
-        background-color: #1F2937;
+    
+    .status-person {
+        background-color: #10B981;
         color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 0.9em;
+    }
+    
+    .status-vehicle {
+        background-color: #3B82F6;
+        color: white;
+    }
+    
+    .status-animal {
+        background-color: #EF4444;
+        color: white;
+    }
+    
+    .status-other {
+        background-color: #F59E0B;
+        color: white;
+    }
+    
+    /* Progress and loading */
+    .stProgress > div > div > div > div {
+        background-color: #2563EB;
+    }
+    
+    /* Layout spacing */
+    .stColumn {
+        gap: 1.5rem;
+    }
+    
+    div[data-testid="column"] {
+        gap: 1.5rem;
+    }
+    
+    /* Form elements spacing */
+    div[data-testid="stVerticalBlock"] > div[style*="flex"] {
+        gap: 1.5rem;
+    }
+    
+    /* Color legend */
+    .color-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .color-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: #4B5563;
+    }
+    
+    .color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    
+    /* Video player */
+    .stVideo {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #E2E8F0;
+    }
+    
+    /* Footer */
+    .footer {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E2E8F0;
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-align: left;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 1.5rem;
+        }
+        
+        .section-header {
+            font-size: 1.125rem;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.5rem 1rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Title and description
-st.markdown('<h1 class="main-header">🔍 YOLOv8 Detection Dashboard</h1>', unsafe_allow_html=True)
+# Title - Top-left aligned
+st.markdown('<h1 class="main-header">YOLOv8 Detection Dashboard</h1>', unsafe_allow_html=True)
 st.markdown("""
-This dashboard allows you to detect persons and objects using YOLOv8 model. 
-Upload a video file or use your webcam for detection with advanced object tracking.
-""")
+<div style='text-align: left; margin-bottom: 2rem; color: #4B5563; font-weight: 400;'>
+    Real-time object detection and tracking using YOLOv8. Upload a video file or use your webcam for detection with advanced object tracking.
+</div>
+""", unsafe_allow_html=True)
 
 # Initialize session state for detection settings
 if 'show_persons' not in st.session_state:
@@ -463,58 +647,89 @@ if 'object_tracker' not in st.session_state:
 
 # Sidebar configuration
 with st.sidebar:
-    st.markdown("# ⚙️ Settings")  # Added main settings title
+    st.markdown("## Settings")
     st.markdown("---")
     
-    # Detection classes
-    st.markdown("## Detection Classes")
-    st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
-    st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
-    st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
-    st.session_state.show_everything = st.checkbox("Show All Classes", value=st.session_state.show_everything, key="sidebar_everything")
+    # Detection classes section
+    st.markdown('<div class="section-header">Detection Classes</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
+            st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
+        with col2:
+            st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
+            st.session_state.show_everything = st.checkbox("All Classes", value=st.session_state.show_everything, key="sidebar_everything")
     
     st.markdown("---")
     
-    # Visualization options
-    st.markdown("## Visualization")
-    st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels)
-    st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence)
-    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object")
+    # Visualization section
+    st.markdown('<div class="section-header">Visualization</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
+        st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels)
+        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
+        st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence)
+        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
+        st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object")
     
     st.markdown("---")
     
-    # Confidence threshold
-    st.markdown("## Configuration")
-    st.session_state.confidence_threshold = st.slider(
-        "Confidence Threshold",
-        min_value=0.1,
-        max_value=1.0,
-        value=st.session_state.confidence_threshold,
-        step=0.05,
-        help="Minimum confidence score for detections"
-    )
+    # Configuration section
+    st.markdown('<div class="section-header">Configuration</div>', unsafe_allow_html=True)
     
-    # Performance settings
-    st.markdown("## Performance")
-    st.session_state.frame_skip = st.slider(
-        "Frame Skip (for speed)",
-        min_value=1,
-        max_value=10,
-        value=st.session_state.frame_skip,
-        step=1,
-        help="Process every nth frame"
-    )
+    with st.container():
+        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.session_state.confidence_threshold = st.slider(
+            "Confidence Threshold",
+            min_value=0.1,
+            max_value=1.0,
+            value=st.session_state.confidence_threshold,
+            step=0.05,
+            help="Minimum confidence score for detections"
+        )
     
-    # Bounding box settings
-    st.markdown("## Bounding Box Settings")
-    st.session_state.box_thickness = st.slider(
-        "Box Thickness",
-        min_value=1,
-        max_value=5,
-        value=st.session_state.box_thickness,
-        step=1,
-        help="Thickness of detection boxes"
-    )
+    st.markdown('<div class="subsection-header">Performance</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.session_state.frame_skip = st.slider(
+            "Frame Skip",
+            min_value=1,
+            max_value=10,
+            value=st.session_state.frame_skip,
+            step=1,
+            help="Process every nth frame"
+        )
+    
+    st.markdown('<div class="subsection-header">Bounding Box</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.session_state.box_thickness = st.slider(
+            "Box Thickness",
+            min_value=1,
+            max_value=5,
+            value=st.session_state.box_thickness,
+            step=1,
+            help="Thickness of detection boxes"
+        )
+    
+    st.markdown("---")
+    
+    # Color legend
+    st.markdown('<div class="section-header">Detection Colors</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div class="color-legend">', unsafe_allow_html=True)
+        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #10B981;"></div><span>Persons</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #3B82F6;"></div><span>Vehicles</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #EF4444;"></div><span>Animals</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #F59E0B;"></div><span>Other</span></div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # Initialize session state for processing
 if 'current_frame' not in st.session_state:
@@ -858,11 +1073,11 @@ def display_summary():
         st.info("No objects tracked yet. Start detection to see tracking data.")
         return
     
-    st.markdown("### 📋 Comprehensive Object Tracking Summary")
+    st.markdown("### Comprehensive Object Tracking Summary")
     
     # Overall statistics
     total_objects = summary["statistics"]["total_objects"]
-    st.markdown(f'<div class="unique-objects">🎯 <strong>Total Unique Objects Tracked:</strong> {total_objects}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="stats-card"><strong>Total Unique Objects Tracked:</strong> {total_objects}</div>', unsafe_allow_html=True)
     
     # Display by category
     for class_name, objects in summary["objects"].items():
@@ -872,89 +1087,78 @@ def display_summary():
         avg_frames = category_stats["avg_frames_per_object"]
         current_active = category_stats.get("current_active", 0)
         
-        # Determine icon
-        icon = "👤"
-        if any(vehicle in class_name.lower() for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']):
-            icon = "🚗"
-        elif any(animal in class_name.lower() for animal in ['dog', 'cat', 'bird', 'horse', 'sheep', 'cow']):
-            icon = "🐕"
-        elif 'cell phone' in class_name.lower():
-            icon = "📱"
-        elif 'laptop' in class_name.lower():
-            icon = "💻"
-        elif 'book' in class_name.lower():
-            icon = "📚"
-        else:
-            icon = "📦"
-        
-        st.markdown(f"#### {icon} {class_name.capitalize()} ({object_count} objects, {current_active} currently active)")
-        
-        # Create summary box for this class
-        summary_html = f'<div class="summary-box">'
-        summary_html += f'''
-        <div class="summary-item">
-            <span class="summary-class">Total objects</span>
-            <span class="summary-count">{object_count}</span>
-        </div>
-        <div class="summary-item">
-            <span class="summary-class">Currently active</span>
-            <span class="summary-count">{current_active}</span>
-        </div>
-        <div class="summary-item">
-            <span class="summary-class">Total frames detected</span>
-            <span class="summary-count">{total_frames}</span>
-        </div>
-        <div class="summary-item">
-            <span class="summary-class">Average frames per object</span>
-            <span class="summary-count">{avg_frames:.1f}</span>
-        </div>
-        '''
-        summary_html += '</div>'
-        st.markdown(summary_html, unsafe_allow_html=True)
-        
-        # Show individual objects with details
-        with st.expander(f"View {object_count} {class_name} objects", expanded=False):
-            for obj in objects:
-                obj_id = obj["id"]
-                frame_count = obj["frame_count"]
-                avg_confidence = obj.get("avg_confidence", 0)
-                is_active = obj.get("is_active", False)
-                
-                details_html = f'''
-                <div class="object-details">
-                    <div><strong>Object ID:</strong> <span class="object-id">{obj_id}</span></div>
-                    <div><strong>Frames detected:</strong> {frame_count}</div>
-                    <div><strong>Average confidence:</strong> {avg_confidence:.2f}</div>
-                    <div><strong>First frame:</strong> {obj.get('first_frame', 'N/A')}</div>
-                    <div><strong>Last frame:</strong> {obj.get('last_frame', 'N/A')}</div>
-                    <div><strong>Status:</strong> <span style="color: {'green' if is_active else 'red'}">{'ACTIVE' if is_active else 'INACTIVE'}</span></div>
-                </div>
-                '''
-                st.markdown(details_html, unsafe_allow_html=True)
+        # Create a clean container for each class
+        with st.container():
+            st.markdown(f"**{class_name.capitalize()}** ({object_count} objects, {current_active} currently active)")
+            
+            # Use Streamlit's native columns and metrics for better compatibility
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total objects", object_count)
+            
+            with col2:
+                st.metric("Currently active", current_active)
+            
+            with col3:
+                st.metric("Total frames", total_frames)
+            
+            with col4:
+                st.metric("Avg frames/obj", f"{avg_frames:.1f}")
+            
+            # Show individual objects with details
+            with st.expander(f"View {object_count} {class_name} objects", expanded=False):
+                for obj in objects:
+                    obj_id = obj["id"]
+                    frame_count = obj["frame_count"]
+                    avg_confidence = obj.get("avg_confidence", 0)
+                    is_active = obj.get("is_active", False)
+                    
+                    # Use Streamlit's native columns and containers
+                    with st.container():
+                        st.markdown(f"**Object ID:** `{obj_id}`")
+                        
+                        # Create columns for the details
+                        detail_col1, detail_col2, detail_col3 = st.columns(3)
+                        
+                        with detail_col1:
+                            st.markdown(f"**Frames detected:** {frame_count}")
+                            st.markdown(f"**First frame:** {obj.get('first_frame', 'N/A')}")
+                        
+                        with detail_col2:
+                            st.markdown(f"**Avg confidence:** {avg_confidence:.2f}")
+                            st.markdown(f"**Last frame:** {obj.get('last_frame', 'N/A')}")
+                        
+                        with detail_col3:
+                            status_text = "Active" if is_active else "Inactive"
+                            st.markdown(f"**Status:** {status_text}")
+                        
+                        st.markdown("---")
 
-# Main tabs - only Webcam and Video
-tab1, tab2 = st.tabs(["📹 Live Webcam", "📁 Upload Video"])
+# Main tabs - Clean underline system
+tab1, tab2 = st.tabs(["Live Webcam", "Upload Video"])
 
 # Tab 1: Live Webcam
 with tab1:
-    st.markdown("### 📹 Live Webcam Detection")
+    st.markdown("## Live Webcam Detection")
     
     # Store current tab
     st.session_state.active_tab = "webcam"
     
-    col1, col2 = st.columns([2, 1])
+    # Use consistent 1.5rem gap between columns
+    col1, col2 = st.columns([2, 1], gap="large")
     
     with col1:
         # Check if webcam is active
         if st.session_state.webcam_active:
-            st.markdown('<div class="processing-info">Webcam is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="processing-card">Webcam is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
             
             # Create placeholders for webcam
             webcam_placeholder = st.empty()
             webcam_stats_placeholder = st.empty()
             
-            # Control button - only Stop button
-            if st.button("⏹️ Stop Webcam", key="stop_webcam_btn", type="secondary"):
+            # Control button
+            if st.button("Stop Webcam", key="stop_webcam_btn", type="secondary"):
                 st.session_state.webcam_active = False
                 st.rerun()
             
@@ -1041,30 +1245,23 @@ with tab1:
                         caption=f"Frame {frame_count} - Tracking {len(tracking_data['active_objects'])} objects"
                     )
                     
-                    # Update statistics display
+                    # Update statistics display with responsive grid
                     with webcam_stats_placeholder.container():
                         fps_value = 1.0 / processing_time if processing_time > 0 else 0
                         
-                        st.markdown("### 📊 Live Statistics")
-                        col1, col2, col3, col4 = st.columns(4)
-                        with col1:
+                        st.markdown("## Live Statistics")
+                        
+                        # Responsive metrics grid
+                        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
+                        with metrics_col1:
                             st.metric("Frames", st.session_state.webcam_frame_count)
-                        with col2:
+                        with metrics_col2:
                             st.metric("Current Detections", detection_count)
-                        with col3:
+                        with metrics_col3:
                             st.metric("Total Detections", st.session_state.webcam_detected_objects)
-                        with col4:
+                        with metrics_col4:
                             st.metric("FPS", f"{fps_value:.1f}")
-                        
-                        # Show current counts in a compact format
-                        if current_counts:
-                            st.markdown("#### 📈 Current Active Objects")
-                            count_cols = st.columns(4)
-                            for i, (class_name, count) in enumerate(current_counts.items()):
-                                if i < 4:  # Show first 4 classes
-                                    with count_cols[i % 4]:
-                                        st.metric(f"{class_name.capitalize()}", count)
-                        
+                         
                         # Show tracking summary
                         display_summary()
                     
@@ -1086,7 +1283,7 @@ with tab1:
         
         else:
             # Show start button
-            if st.button("🎬 Start Webcam Detection", key="start_webcam_main", type="primary"):
+            if st.button("Start Webcam Detection", key="start_webcam_main", type="primary"):
                 st.session_state.webcam_active = True
                 st.session_state.video_processing = False  # Ensure video is stopped
                 # Reset tracker when starting
@@ -1094,29 +1291,26 @@ with tab1:
                 st.rerun()
     
     with col2:
-        st.markdown("#### Webcam Instructions")
-        st.info("""
-        1. Click **Start Webcam Detection**
-        2. Allow camera access when prompted
-        3. Objects are tracked with unique IDs
-        4. Adjust settings in sidebar
-        5. Click **Stop Webcam** to end
+        st.markdown("#### Instructions")
+        st.markdown("""
+        <div class="info-card">
+        <div style="margin-bottom: 0.75rem;"><strong>Steps:</strong></div>
+        <div style="margin-bottom: 0.5rem;">1. Click Start Webcam Detection</div>
+        <div style="margin-bottom: 0.5rem;">2. Allow camera access when prompted</div>
+        <div style="margin-bottom: 0.5rem;">3. Objects are tracked with unique IDs</div>
+        <div style="margin-bottom: 0.5rem;">4. Adjust settings in sidebar</div>
+        <div style="margin-bottom: 1rem;">5. Click Stop Webcam to end</div>
         
-        **Improved Object Tracking:**
-        - Uses IoU and center distance for matching
-        - Objects can be missing for 5 frames before being removed
-        - Better prevents duplicate IDs for same object
-        
-        **Detection Colors:**
-        - 🟢 Green: Persons
-        - 🔵 Blue: Vehicles
-        - 🔴 Red: Animals
-        - 🟡 Yellow: Other objects
-        """)
+        <div style="margin-bottom: 0.75rem;"><strong>Tracking Features:</strong></div>
+        <div style="margin-bottom: 0.5rem;">• Uses IoU and center distance for matching</div>
+        <div style="margin-bottom: 0.5rem;">• Objects can be missing for 5 frames</div>
+        <div>• Prevents duplicate IDs for same object</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Tab 2: Upload Video
 with tab2:
-    st.markdown("### 📁 Upload Video for Detection")
+    st.markdown("## Upload Video for Detection")
     
     # Store current tab
     st.session_state.active_tab = "video"
@@ -1138,7 +1332,8 @@ with tab2:
         st.session_state.video_path = video_path
         st.session_state.uploaded_file = uploaded_file
         
-        col1, col2 = st.columns([2, 1])
+        # Use consistent 1.5rem gap between columns
+        col1, col2 = st.columns([2, 1], gap="large")
         
         with col1:
             # Show video preview if not processing
@@ -1147,7 +1342,7 @@ with tab2:
             
             # Check if video processing is active
             if st.session_state.video_processing:
-                st.markdown('<div class="processing-info">Video processing is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
+                st.markdown('<div class="processing-card">Video processing is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
                 
                 # Create placeholders for video
                 video_placeholder = st.empty()
@@ -1155,7 +1350,7 @@ with tab2:
                 video_progress_placeholder = st.empty()
                 
                 # Control button
-                if st.button("⏹️ Stop Processing", key="stop_video_btn", type="secondary"):
+                if st.button("Stop Processing", key="stop_video_btn", type="secondary"):
                     st.session_state.video_processing = False
                     st.rerun()
                 
@@ -1252,33 +1447,26 @@ with tab2:
                             caption=f"Frame {frame_count}/{total_frames} - Tracking {len(tracking_data['active_objects'])} objects"
                         )
                         
-                        # Update statistics display
+                        # Update statistics display with responsive grid
                         with video_stats_placeholder.container():
                             fps_value = 1.0 / processing_time if processing_time > 0 else 0
                             
-                            st.markdown(f"**Processing Statistics**")
-                            col1, col2, col3, col4 = st.columns(4)
-                            with col1:
+                            st.markdown("#### Processing Statistics")
+                            
+                            # Responsive metrics grid
+                            metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
+                            with metrics_col1:
                                 if total_frames > 0:
                                     progress_percent = (frame_count / total_frames) * 100
                                     st.metric("Progress", f"{progress_percent:.1f}%")
                                 else:
                                     st.metric("Frames", frame_count)
-                            with col2:
+                            with metrics_col2:
                                 st.metric("Current Detections", detection_count)
-                            with col3:
+                            with metrics_col3:
                                 st.metric("Total Detections", st.session_state.video_detected_objects)
-                            with col4:
+                            with metrics_col4:
                                 st.metric("FPS", f"{fps_value:.1f}")
-                            
-                            # Show current counts in a compact format
-                            if current_counts:
-                                st.markdown("#### 📈 Current Active Objects")
-                                count_cols = st.columns(4)
-                                for i, (class_name, count) in enumerate(current_counts.items()):
-                                    if i < 4:  # Show first 4 classes
-                                        with count_cols[i % 4]:
-                                            st.metric(f"{class_name.capitalize()}", count)
                             
                             # Show tracking summary
                             display_summary()
@@ -1304,7 +1492,7 @@ with tab2:
             
             else:
                 # Show start button
-                if st.button("🚀 Start Video Processing", key="start_video_main", type="primary"):
+                if st.button("Start Video Processing", key="start_video_main", type="primary"):
                     st.session_state.video_processing = True
                     st.session_state.webcam_active = False  # Ensure webcam is stopped
                     # Reset tracker when starting
@@ -1312,48 +1500,52 @@ with tab2:
                     st.rerun()
         
         with col2:
-            st.markdown("#### Video Information")
-            
-            try:
-                # Display video info
-                cap = cv2.VideoCapture(video_path)
-                if cap.isOpened():
-                    fps = cap.get(cv2.CAP_PROP_FPS)
-                    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    duration = frame_count / fps if fps > 0 else 0
-                    
-                    st.metric("Frame Rate", f"{fps:.1f} FPS")
-                    st.metric("Resolution", f"{width}×{height}")
-                    st.metric("Total Frames", frame_count)
-                    st.metric("Duration", f"{duration:.1f} seconds")
-                    cap.release()
-                else:
+            # Only show video info and instructions when NOT processing
+            if not st.session_state.video_processing:
+                st.markdown("#### Video Information")
+                
+                try:
+                    # Display video info
+                    cap = cv2.VideoCapture(video_path)
+                    if cap.isOpened():
+                        fps = cap.get(cv2.CAP_PROP_FPS)
+                        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        duration = frame_count / fps if fps > 0 else 0
+                        
+                        with st.container():
+                            col_info1, col_info2 = st.columns(2)
+                            with col_info1:
+                                st.metric("Frame Rate", f"{fps:.1f}")
+                                st.metric("Total Frames", frame_count)
+                            with col_info2:
+                                st.metric("Resolution", f"{width}×{height}")
+                                st.metric("Duration", f"{duration:.1f}s")
+                        cap.release()
+                    else:
+                        st.warning("Could not read video properties")
+                except:
                     st.warning("Could not read video properties")
-            except:
-                st.warning("Could not read video properties")
-            
-            st.markdown("#### Processing Instructions")
-            st.info("""
-            1. Video uploaded successfully
-            2. Click **Start Video Processing**
-            3. Objects are tracked with unique IDs
-            4. View real-time results with comprehensive tracking
-            5. Click **Stop Processing** to pause
-            
-            **Improved Object Tracking:**
-            - Uses IoU (0.4 threshold) and center distance
-            - Objects can disappear for 5 frames
-            - Prevents duplicate IDs for same object
-            - Sorts detections by confidence for better matching
-            
-            **Detection Colors:**
-            - 🟢 Green: Persons
-            - 🔵 Blue: Vehicles
-            - 🔴 Red: Animals
-            - 🟡 Yellow: Other objects
-            """)
+                
+                st.markdown("#### Processing Instructions")
+                st.markdown("""
+                <div class="info-card">
+                <div style="margin-bottom: 0.75rem;"><strong>Steps:</strong></div>
+                <div style="margin-bottom: 0.5rem;">1. Video uploaded successfully</div>
+                <div style="margin-bottom: 0.5rem;">2. Click Start Video Processing</div>
+                <div style="margin-bottom: 0.5rem;">3. Objects are tracked with unique IDs</div>
+                <div style="margin-bottom: 0.5rem;">4. View real-time results with comprehensive tracking</div>
+                <div style="margin-bottom: 1rem;">5. Click Stop Processing to pause</div>
+                
+                <div style="margin-bottom: 0.75rem;"><strong>Tracking Features:</strong></div>
+                <div style="margin-bottom: 0.5rem;">• Uses IoU (0.4 threshold) and center distance</div>
+                <div style="margin-bottom: 0.5rem;">• Objects can disappear for 5 frames</div>
+                <div style="margin-bottom: 0.5rem;">• Prevents duplicate IDs for same object</div>
+                <div>• Sorts detections by confidence for better matching</div>
+                </div>
+                """, unsafe_allow_html=True)
+            # When processing, the right column will show the statistics from video_stats_placeholder
     else:
         # Clear video path if no file is uploaded
         st.session_state.video_path = None
@@ -1363,15 +1555,15 @@ with tab2:
 # Footer
 st.markdown("---")
 st.markdown("""
-<div style='text-align: center'>
+<div class="footer">
     <p>YOLOv8 Detection Dashboard with Advanced Object Tracking | Built with Streamlit, OpenCV, and PyTorch</p>
-    <p style='font-size: 0.8rem; color: #666;'>
-        <strong>Detection Status:</strong> 
-        <span style='color: green;'>● Persons</span> | 
-        <span style='color: blue;'>● Vehicles</span> | 
-        <span style='color: red;'>● Animals</span> | 
-        <span style='color: yellow;'>● Other objects</span> |
-        <span style='color: white; background-color: #666; padding: 2px 5px; border-radius: 3px;'>ID:XXX</span> Persistent Object IDs
+    <p style="margin-top: 0.5rem;">
+        Detection Colors: 
+        <span style="color: #10B981;">● Persons</span> | 
+        <span style="color: #3B82F6;">● Vehicles</span> | 
+        <span style="color: #EF4444;">● Animals</span> | 
+        <span style="color: #F59E0B;">● Other objects</span> |
+        <span style="background-color: #1F2937; color: white; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.7rem;">ID:XXX</span> Object IDs
     </p>
 </div>
 """, unsafe_allow_html=True)
