@@ -1,4 +1,4 @@
-# main.py - Fixed version with object tracking
+# main.py - Fixed version with improved object tracking
 
 import streamlit as st
 import cv2
@@ -6,8 +6,8 @@ import numpy as np
 import tempfile
 import time
 from PIL import Image
-import matplotlib.pyplot as plt
 import random
+from collections import defaultdict
 
 # COCO class names for better detection labels
 COCO_CLASSES = [
@@ -24,6 +24,281 @@ COCO_CLASSES = [
     'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
     'toothbrush'
 ]
+
+# Object Tracker Class with improved matching and global persistence
+class ObjectTracker:
+    def __init__(self):
+        self.object_instances = defaultdict(list)  # {class_name: [ids]}
+        self.object_data = {}  # {object_id: {class_name, frames, bbox_history, confidence_history}}
+        self.next_id = defaultdict(int)  # Track next ID for each class - GLOBALLY PERSISTENT
+        self.active_objects = {}  # Currently tracked objects in current frame {object_id: bbox}
+        self.active_counts = defaultdict(int)  # Current frame counts per class {class_name: count}
+        self.iou_threshold = 0.4  # Increased IoU threshold for better matching
+        self.max_frames_missing = 5  # Number of frames an object can be missing before being removed
+        
+    def calculate_iou(self, box1, box2):
+        """Calculate Intersection over Union between two bounding boxes"""
+        # box format: [x1, y1, x2, y2]
+        x1_1, y1_1, x2_1, y2_1 = box1
+        x1_2, y1_2, x2_2, y2_2 = box2
+        
+        # Calculate intersection area
+        xi1 = max(x1_1, x1_2)
+        yi1 = max(y1_1, y1_2)
+        xi2 = min(x2_1, x2_2)
+        yi2 = min(y2_1, y2_2)
+        
+        inter_area = max(0, xi2 - xi1) * max(0, yi2 - yi1)
+        
+        # Calculate union area
+        box1_area = (x2_1 - x1_1) * (y2_1 - y1_1)
+        box2_area = (x2_2 - x1_2) * (y2_2 - y1_2)
+        union_area = box1_area + box2_area - inter_area
+        
+        # Calculate IoU
+        iou = inter_area / union_area if union_area > 0 else 0
+        return iou
+    
+    def calculate_center_distance(self, box1, box2):
+        """Calculate distance between centers of two boxes"""
+        # Calculate centers
+        center1_x = (box1[0] + box1[2]) / 2
+        center1_y = (box1[1] + box1[3]) / 2
+        center2_x = (box2[0] + box2[2]) / 2
+        center2_y = (box2[1] + box2[3]) / 2
+        
+        # Calculate Euclidean distance
+        distance = np.sqrt((center1_x - center2_x)**2 + (center1_y - center2_y)**2)
+        return distance
+    
+    def match_existing_object(self, class_name, bbox, frame_num):
+        """
+        Match detection with existing objects using IoU and center distance
+        Returns object_id if match found, None otherwise
+        """
+        best_match_id = None
+        best_iou = self.iou_threshold
+        best_center_distance = float('inf')
+        
+        # Check all objects of the same class (not just active ones)
+        for obj_id in self.object_instances.get(class_name, []):
+            obj_data = self.object_data.get(obj_id)
+            if not obj_data:
+                continue
+                
+            # Get the last known bounding box for this object
+            if obj_data['bbox_history']:
+                last_bbox = obj_data['bbox_history'][-1]
+                
+                # Calculate IoU
+                iou = self.calculate_iou(bbox, last_bbox)
+                
+                # Calculate center distance
+                center_distance = self.calculate_center_distance(bbox, last_bbox)
+                
+                # Calculate frame gap (how many frames since last seen)
+                frame_gap = frame_num - obj_data['frames'][-1] if obj_data['frames'] else 0
+                
+                # Combined matching score (weighted)
+                # Give more weight to IoU and penalize large frame gaps
+                match_score = iou * 0.7 - (center_distance / 1000) * 0.2 - (frame_gap / 100) * 0.1
+                
+                # If IoU is good enough and it's not too far in time
+                if iou > best_iou and frame_gap < self.max_frames_missing:
+                    best_iou = iou
+                    best_match_id = obj_id
+                    best_center_distance = center_distance
+                # If IoU is borderline but center is very close
+                elif iou > 0.2 and center_distance < 50 and frame_gap < 3:
+                    if center_distance < best_center_distance:
+                        best_center_distance = center_distance
+                        best_match_id = obj_id
+        
+        return best_match_id
+    
+    def update_tracking(self, detections, frame_num):
+        """
+        Update object tracking with new detections
+        detections format: [{"class": "person", "bbox": [x1, y1, x2, y2], "confidence": 0.95}, ...]
+        Returns: {
+            "active_objects": {object_id: bbox},
+            "current_counts": {class_name: count},
+            "total_objects": total_count
+        }
+        """
+        # Clear active objects and counts for new frame
+        new_active_objects = {}
+        self.active_counts.clear()  # Reset current frame counts
+        
+        # First, try to match each detection with existing objects
+        matched_detections = set()
+        matched_objects = set()
+        
+        # Sort detections by confidence (highest first) for better matching
+        detections_sorted = sorted(detections, key=lambda x: x['confidence'], reverse=True)
+        
+        # First pass: try to match with high IoU
+        for detection in detections_sorted:
+            class_name = detection['class']
+            bbox = detection['bbox']
+            confidence = detection.get('confidence', 0.0)
+            
+            matched_id = self.match_existing_object(class_name, bbox, frame_num)
+            
+            if matched_id:
+                # Update existing object
+                obj_data = self.object_data[matched_id]
+                obj_data['frames'].append(frame_num)
+                obj_data['bbox_history'].append(bbox)
+                obj_data['confidence_history'].append(confidence)
+                obj_data['last_frame'] = frame_num
+                obj_data['missing_frames'] = 0  # Reset missing frames
+                
+                new_active_objects[matched_id] = bbox
+                matched_detections.add(id(detection))
+                matched_objects.add(matched_id)
+                self.active_counts[class_name] += 1  # Increment count for this class
+        
+        # Second pass: create new objects for unmatched detections
+        for detection in detections_sorted:
+            if id(detection) in matched_detections:
+                continue
+                
+            class_name = detection['class']
+            bbox = detection['bbox']
+            confidence = detection.get('confidence', 0.0)
+            
+            # Create new object with unique ID
+            object_id = f"{class_name.lower().replace(' ', '-')}-{self.next_id[class_name]:03d}"
+            self.next_id[class_name] += 1
+            
+            # Add to object instances
+            self.object_instances[class_name].append(object_id)
+            
+            # Create object data
+            self.object_data[object_id] = {
+                'class': class_name,
+                'frames': [frame_num],
+                'bbox_history': [bbox],
+                'confidence_history': [confidence],
+                'first_frame': frame_num,
+                'last_frame': frame_num,
+                'missing_frames': 0
+            }
+            
+            new_active_objects[object_id] = bbox
+            self.active_counts[class_name] += 1  # Increment count for this class
+        
+        # Update missing frames for objects not detected in this frame
+        for obj_id, obj_data in self.object_data.items():
+            if obj_id not in new_active_objects:
+                obj_data['missing_frames'] = obj_data.get('missing_frames', 0) + 1
+        
+        # Update active objects
+        self.active_objects = new_active_objects
+        
+        # Clean up objects that have been missing for too long
+        self.cleanup_old_objects(frame_num)
+        
+        # Prepare return data with current counts
+        return_data = {
+            "active_objects": new_active_objects,
+            "current_counts": dict(self.active_counts),  # Convert to regular dict
+            "total_objects": len(new_active_objects)
+        }
+        
+        return return_data
+    
+    def cleanup_old_objects(self, current_frame):
+        """Remove objects that have been missing for too many frames"""
+        objects_to_remove = []
+        
+        for obj_id, obj_data in self.object_data.items():
+            missing_frames = obj_data.get('missing_frames', 0)
+            
+            # If object hasn't been seen for max_frames_missing frames, remove it
+            if missing_frames > self.max_frames_missing:
+                objects_to_remove.append(obj_id)
+        
+        # Remove objects
+        for obj_id in objects_to_remove:
+            class_name = self.object_data[obj_id]['class']
+            
+            # Remove from object_instances
+            if obj_id in self.object_instances[class_name]:
+                self.object_instances[class_name].remove(obj_id)
+            
+            # Remove from object_data
+            del self.object_data[obj_id]
+            
+            # Remove from active_objects if present
+            if obj_id in self.active_objects:
+                del self.active_objects[obj_id]
+            
+            # Remove from active_counts if present
+            if class_name in self.active_counts:
+                # Recalculate active counts for this class
+                self.active_counts[class_name] = sum(
+                    1 for obj_id, obj_data in self.object_data.items() 
+                    if obj_data.get('class') == class_name and obj_data.get('missing_frames', 0) == 0
+                )
+    
+    def get_current_counts(self):
+        """Get current counts per class for active objects"""
+        return dict(self.active_counts)
+    
+    def generate_summary(self):
+        """
+        Generate comprehensive summary of tracked objects
+        Returns format similar to your JSON example
+        """
+        summary = {
+            "objects": {},
+            "statistics": {
+                "total_objects": 0,
+                "categories": {}
+            },
+            "current_counts": dict(self.active_counts)  # Add current counts to summary
+        }
+        
+        for class_name, ids in self.object_instances.items():
+            class_objects = []
+            total_frames_class = 0
+            
+            for obj_id in ids:
+                obj_data = self.object_data.get(obj_id, {})
+                visible_frames = len(obj_data.get('frames', []))
+                total_frames_class += visible_frames
+                
+                class_objects.append({
+                    "id": obj_id,
+                    "frame_count": visible_frames,
+                    "first_frame": obj_data.get('first_frame', 0),
+                    "last_frame": obj_data.get('last_frame', 0),
+                    "avg_confidence": np.mean(obj_data.get('confidence_history', [])) if obj_data.get('confidence_history') else 0,
+                    "is_active": obj_data.get('missing_frames', 0) == 0
+                })
+            
+            summary["objects"][class_name] = class_objects
+            
+            # Update statistics
+            summary["statistics"]["categories"][class_name] = {
+                "count": len(ids),
+                "total_frames": total_frames_class,
+                "avg_frames_per_object": total_frames_class / len(ids) if len(ids) > 0 else 0,
+                "current_active": self.active_counts.get(class_name, 0)
+            }
+            summary["statistics"]["total_objects"] += len(ids)
+        
+        return summary
+    
+    def reset(self):
+        """Reset the tracker (but preserve next_id for global persistence across sessions)"""
+        self.object_instances = defaultdict(list)
+        self.object_data = {}
+        # DO NOT reset next_id to maintain global persistence across webcam/video sessions
+        self.active_objects = {}
+        self.active_counts.clear()
 
 # Set page configuration - MUST BE FIRST STREAMLIT COMMAND
 st.set_page_config(
@@ -105,6 +380,51 @@ st.markdown("""
         from { opacity: 0; }
         to { opacity: 1; }
     }
+    .summary-box {
+        background-color: #F3F4F6;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+        border-left: 4px solid #6B7280;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    .summary-class {
+        font-weight: 500;
+    }
+    .summary-count {
+        font-weight: bold;
+        color: #1E3A8A;
+    }
+    .unique-objects {
+        background-color: #E0F2FE;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin: 0.5rem 0;
+        border-left: 4px solid #0EA5E9;
+    }
+    .object-details {
+        background-color: #FCE7F3;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+        border-left: 4px solid #DB2777;
+    }
+    .object-id {
+        font-family: monospace;
+        background-color: #1F2937;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -112,7 +432,7 @@ st.markdown("""
 st.markdown('<h1 class="main-header">🔍 YOLOv8 Detection Dashboard</h1>', unsafe_allow_html=True)
 st.markdown("""
 This dashboard allows you to detect persons and objects using YOLOv8 model. 
-Upload a video file or use your webcam for detection.
+Upload a video file or use your webcam for detection with advanced object tracking.
 """)
 
 # Initialize session state for detection settings
@@ -136,16 +456,35 @@ if 'show_confidence' not in st.session_state:
     st.session_state.show_confidence = True
 if 'show_ids' not in st.session_state:
     st.session_state.show_ids = True
-if 'next_object_id' not in st.session_state:
-    st.session_state.next_object_id = 1
-if 'tracked_objects' not in st.session_state:
-    st.session_state.tracked_objects = {}  # Dictionary to track objects across frames
+
+# Initialize tracker in session state
+if 'object_tracker' not in st.session_state:
+    st.session_state.object_tracker = ObjectTracker()
 
 # Sidebar configuration
 with st.sidebar:
-    st.markdown("### ⚙️ Configuration")
+    st.markdown("# ⚙️ Settings")  # Added main settings title
+    st.markdown("---")
+    
+    # Detection classes
+    st.markdown("## Detection Classes")
+    st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
+    st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
+    st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
+    st.session_state.show_everything = st.checkbox("Show All Classes", value=st.session_state.show_everything, key="sidebar_everything")
+    
+    st.markdown("---")
+    
+    # Visualization options
+    st.markdown("## Visualization")
+    st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels)
+    st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence)
+    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object")
+    
+    st.markdown("---")
     
     # Confidence threshold
+    st.markdown("## Configuration")
     st.session_state.confidence_threshold = st.slider(
         "Confidence Threshold",
         min_value=0.1,
@@ -155,15 +494,8 @@ with st.sidebar:
         help="Minimum confidence score for detections"
     )
     
-    # Detection classes
-    st.markdown("#### Detection Classes")
-    st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
-    st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
-    st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
-    st.session_state.show_everything = st.checkbox("Show All Classes", value=st.session_state.show_everything, key="sidebar_everything")
-    
     # Performance settings
-    st.markdown("#### Performance")
+    st.markdown("## Performance")
     st.session_state.frame_skip = st.slider(
         "Frame Skip (for speed)",
         min_value=1,
@@ -173,14 +505,8 @@ with st.sidebar:
         help="Process every nth frame"
     )
     
-    # Visualization options
-    st.markdown("#### Visualization")
-    st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels)
-    st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence)
-    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object")
-    
     # Bounding box settings
-    st.markdown("#### Bounding Box Settings")
+    st.markdown("## Bounding Box Settings")
     st.session_state.box_thickness = st.slider(
         "Box Thickness",
         min_value=1,
@@ -234,10 +560,42 @@ def detect_with_yolo(model, image):
     
     if model is None:
         # Generate realistic dummy detections with proper bounding boxes
-        num_detections = random.randint(2, 5)
+        num_detections = random.randint(2, 8)
         
-        for i in range(num_detections):
-            # Random size and position
+        # For consistent testing, let's simulate a few persistent objects
+        persistent_objects = []
+        if st.session_state.show_persons:
+            # Simulate 1-2 persons that move slightly
+            for i in range(random.randint(1, 2)):
+                base_x = random.randint(100, width - 300)
+                base_y = random.randint(100, height - 300)
+                # Small random movement
+                dx = random.randint(-20, 20)
+                dy = random.randint(-20, 20)
+                x1 = max(0, base_x + dx)
+                y1 = max(0, base_y + dy)
+                x2 = x1 + random.randint(80, 150)
+                y2 = y1 + random.randint(150, 250)
+                conf = random.uniform(0.7, 0.95)
+                persistent_objects.append({"class": "person", "bbox": [x1, y1, x2, y2], "confidence": conf})
+        
+        if st.session_state.show_vehicles:
+            # Simulate 0-1 vehicles
+            for i in range(random.randint(0, 1)):
+                base_x = random.randint(200, width - 400)
+                base_y = random.randint(200, height - 200)
+                dx = random.randint(-30, 30)
+                dy = random.randint(-10, 10)
+                x1 = max(0, base_x + dx)
+                y1 = max(0, base_y + dy)
+                x2 = x1 + random.randint(120, 250)
+                y2 = y1 + random.randint(80, 150)
+                conf = random.uniform(0.7, 0.95)
+                persistent_objects.append({"class": "car", "bbox": [x1, y1, x2, y2], "confidence": conf})
+        
+        # Add some random detections
+        random_detections = []
+        for i in range(random.randint(0, 3)):
             box_width = random.randint(50, 200)
             box_height = random.randint(50, 200)
             x1 = random.randint(0, width - box_width - 1)
@@ -245,7 +603,6 @@ def detect_with_yolo(model, image):
             x2 = x1 + box_width
             y2 = y1 + box_height
             
-            # Random confidence
             conf = random.uniform(0.6, 0.95)
             
             # Select class based on user preferences
@@ -257,13 +614,15 @@ def detect_with_yolo(model, image):
             if st.session_state.show_animals:
                 possible_classes.extend(['dog', 'cat', 'bird', 'horse'])
             if st.session_state.show_everything and len(possible_classes) == 0:
-                possible_classes = ['person', 'car', 'dog', 'bicycle', 'chair', 'bottle']
+                possible_classes = ['person', 'car', 'dog', 'bicycle', 'chair', 'bottle', 'cell phone', 'laptop', 'book']
             
             if len(possible_classes) > 0:
                 class_name = random.choice(possible_classes)
-                cls_id = COCO_CLASSES.index(class_name) if class_name in COCO_CLASSES else 0
-                detections.append([x1, y1, x2, y2, conf, cls_id, class_name])
+                # Format for tracker: {"class": class_name, "bbox": [x1, y1, x2, y2], "confidence": conf}
+                random_detections.append({"class": class_name, "bbox": [x1, y1, x2, y2], "confidence": conf})
         
+        # Combine persistent and random detections
+        detections = persistent_objects + random_detections
         return detections
     
     # Real model detection
@@ -283,10 +642,10 @@ def detect_with_yolo(model, image):
                         conf = box.conf[0].cpu().numpy()
                         cls_id = int(box.cls[0].cpu().numpy())
                         class_name = COCO_CLASSES[cls_id] if cls_id < len(COCO_CLASSES) else f"class_{cls_id}"
-                        detections.append([x1, y1, x2, y2, conf, cls_id, class_name])
+                        detections.append({"class": class_name, "bbox": [float(x1), float(y1), float(x2), float(y2)], "confidence": float(conf)})
         except Exception as e:
             # Fallback to dummy detections
-            num_detections = random.randint(2, 5)
+            num_detections = random.randint(2, 8)
             for i in range(num_detections):
                 box_width = random.randint(50, 200)
                 box_height = random.randint(50, 200)
@@ -295,82 +654,47 @@ def detect_with_yolo(model, image):
                 x2 = x1 + box_width
                 y2 = y1 + box_height
                 conf = random.uniform(0.6, 0.95)
-                class_name = random.choice(['person', 'car', 'dog', 'bicycle'])
-                cls_id = COCO_CLASSES.index(class_name) if class_name in COCO_CLASSES else 0
-                detections.append([x1, y1, x2, y2, conf, cls_id, class_name])
+                class_name = random.choice(['person', 'car', 'dog', 'bicycle', 'cell phone', 'laptop'])
+                detections.append({"class": class_name, "bbox": [x1, y1, x2, y2], "confidence": conf})
     
     return detections
 
-def calculate_iou(box1, box2):
-    """Calculate Intersection over Union between two bounding boxes"""
-    x1_1, y1_1, x2_1, y2_1 = box1
-    x1_2, y1_2, x2_2, y2_2 = box2
+def filter_detections(detections):
+    """Filter detections based on user preferences and confidence threshold"""
+    filtered = []
+    for det in detections:
+        class_name = det['class'].lower()
+        confidence = det['confidence']
+        
+        # Check confidence threshold
+        if confidence < st.session_state.confidence_threshold:
+            continue
+        
+        # Check if class should be shown
+        should_show = False
+        if st.session_state.show_everything:
+            should_show = True
+        elif 'person' in class_name and st.session_state.show_persons:
+            should_show = True
+        elif any(vehicle in class_name for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']) and st.session_state.show_vehicles:
+            should_show = True
+        elif any(animal in class_name for animal in ['dog', 'cat', 'bird', 'horse']) and st.session_state.show_animals:
+            should_show = True
+        
+        if should_show:
+            filtered.append(det)
     
-    # Calculate intersection area
-    xi1 = max(x1_1, x1_2)
-    yi1 = max(y1_1, y1_2)
-    xi2 = min(x2_1, x2_2)
-    yi2 = min(y2_1, y2_2)
-    
-    inter_area = max(0, xi2 - xi1) * max(0, yi2 - yi1)
-    
-    # Calculate union area
-    box1_area = (x2_1 - x1_1) * (y2_1 - y1_1)
-    box2_area = (x2_2 - x1_2) * (y2_2 - y1_2)
-    union_area = box1_area + box2_area - inter_area
-    
-    # Calculate IoU
-    iou = inter_area / union_area if union_area > 0 else 0
-    return iou
+    return filtered
 
-def assign_object_ids(current_detections, previous_objects, iou_threshold=0.3):
-    """Assign IDs to objects based on tracking across frames"""
-    current_objects = {}
-    
-    # For each current detection
-    for det_idx, det in enumerate(current_detections):
-        x1, y1, x2, y2, conf, cls_id, class_name = det
-        current_box = (x1, y1, x2, y2)
-        found_match = False
-        
-        # Try to match with previous objects
-        best_match_id = None
-        best_iou = iou_threshold
-        
-        for obj_id, prev_obj in previous_objects.items():
-            prev_box = (prev_obj['x1'], prev_obj['y1'], prev_obj['x2'], prev_obj['y2'])
-            prev_class = prev_obj['class_name']
-            
-            # Only match if same class
-            if class_name == prev_class:
-                iou = calculate_iou(current_box, prev_box)
-                if iou > best_iou:
-                    best_iou = iou
-                    best_match_id = obj_id
-        
-        # Assign ID
-        if best_match_id is not None:
-            # Reuse existing ID
-            obj_id = best_match_id
-            found_match = True
-        else:
-            # Assign new ID
-            obj_id = st.session_state.next_object_id
-            st.session_state.next_object_id += 1
-        
-        # Store current object
-        current_objects[obj_id] = {
-            'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2,
-            'conf': conf, 'cls_id': cls_id, 'class_name': class_name,
-            'detection_idx': det_idx
-        }
-    
-    return current_objects
-
-def draw_detections(frame, tracked_objects, frame_number=0, source="webcam"):
-    """Draw detection boxes on frame with object IDs"""
+def draw_detections(frame, tracked_data, frame_number=0, source="webcam"):
+    """Draw detection boxes on frame with object IDs and current counts overlay"""
     frame_copy = frame.copy()
     height, width = frame_copy.shape[:2]
+    
+    # Unpack tracked data
+    tracked_objects = tracked_data.get("active_objects", {})
+    current_counts = tracked_data.get("current_counts", {})
+    total_objects = tracked_data.get("total_objects", 0)
     
     # Draw a border around the frame
     cv2.rectangle(frame_copy, (0, 0), (width-1, height-1), (100, 100, 100), 2)
@@ -384,10 +708,15 @@ def draw_detections(frame, tracked_objects, frame_number=0, source="webcam"):
     
     detection_count = 0
     
-    for obj_id, obj_info in tracked_objects.items():
-        x1, y1, x2, y2 = int(obj_info['x1']), int(obj_info['y1']), int(obj_info['x2']), int(obj_info['y2'])
-        conf = obj_info['conf']
-        class_name = obj_info['class_name']
+    # Draw bounding boxes for each tracked object
+    for obj_id, bbox in tracked_objects.items():
+        # Get object data
+        obj_data = st.session_state.object_tracker.object_data.get(obj_id, {})
+        class_name = obj_data.get('class', 'unknown')
+        confidence_history = obj_data.get('confidence_history', [0])
+        avg_confidence = np.mean(confidence_history) if confidence_history else 0
+        
+        x1, y1, x2, y2 = map(int, bbox)
         
         # Ensure coordinates are within frame bounds
         x1 = max(0, min(x1, width-1))
@@ -399,19 +728,19 @@ def draw_detections(frame, tracked_objects, frame_number=0, source="webcam"):
         if x1 >= x2 or y1 >= y2:
             continue
             
-        # Skip if confidence is below threshold
-        if conf < st.session_state.confidence_threshold:
-            continue
-            
         # Choose color based on class
         if 'person' in class_name.lower():
             color = (0, 255, 0)  # Green for persons
+            text_color = (0, 255, 0)
         elif any(vehicle in class_name.lower() for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']):
             color = (255, 0, 0)  # Blue for vehicles
+            text_color = (255, 200, 0)  # Orange text for visibility on blue
         elif any(animal in class_name.lower() for animal in ['dog', 'cat', 'bird', 'horse', 'sheep', 'cow']):
             color = (0, 0, 255)  # Red for animals
+            text_color = (255, 255, 0)  # Yellow text for visibility on red
         else:
             color = (255, 255, 0)  # Yellow for others
+            text_color = (0, 0, 0)  # Black text for visibility on yellow
         
         # Draw rectangle with thickness
         cv2.rectangle(frame_copy, (x1, y1), (x2, y2), color, st.session_state.box_thickness)
@@ -420,9 +749,11 @@ def draw_detections(frame, tracked_objects, frame_number=0, source="webcam"):
         if st.session_state.show_labels:
             label = f"{class_name}"
             if st.session_state.show_ids:
-                label = f"ID:{obj_id} {label}"
+                # Extract just the ID number for display
+                id_num = obj_id.split('-')[-1]
+                label = f"ID:{id_num} {label}"
             if st.session_state.show_confidence:
-                label += f" {conf:.2f}"
+                label += f" {avg_confidence:.2f}"
             
             # Get text size
             (text_width, text_height), baseline = cv2.getTextSize(
@@ -441,20 +772,165 @@ def draw_detections(frame, tracked_objects, frame_number=0, source="webcam"):
                       (x1, y1 - 5), 
                       cv2.FONT_HERSHEY_SIMPLEX, 
                       0.5, 
-                      (255, 255, 255), 
+                      (255, 255, 255),  # White text for better visibility
                       2)
         
         detection_count += 1
     
-    # Add detection count to frame
+    # ===== ADD CURRENT COUNTS OVERLAY =====
+    # Create a semi-transparent overlay for counts
+    overlay = frame_copy.copy()
+    
+    # Define overlay position and size
+    overlay_x = width - 250
+    overlay_y = 100
+    overlay_width = 240
+    overlay_height = min(400, 100 + len(current_counts) * 30)
+    
+    # Draw semi-transparent background
+    cv2.rectangle(overlay, 
+                 (overlay_x, overlay_y), 
+                 (overlay_x + overlay_width, overlay_y + overlay_height), 
+                 (0, 0, 0), -1)  # Black background
+    frame_copy = cv2.addWeighted(overlay, 0.7, frame_copy, 0.3, 0)
+    
+    # Add title for counts overlay
+    cv2.putText(frame_copy, "CURRENT COUNTS", 
+               (overlay_x + 10, overlay_y + 30), 
+               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    
+    # Add total objects count
+    cv2.putText(frame_copy, f"Total Objects: {total_objects}", 
+               (overlay_x + 10, overlay_y + 60), 
+               cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+    
+    # Add each class count with colored indicators
+    y_offset = 90
+    for i, (class_name, count) in enumerate(sorted(current_counts.items())):
+        if i >= 10:  # Limit display to top 10 classes for space
+            remaining = len(current_counts) - 10
+            cv2.putText(frame_copy, f"... and {remaining} more", 
+                       (overlay_x + 10, overlay_y + y_offset + 20), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+            break
+        
+        # Determine color for this class
+        if 'person' in class_name.lower():
+            dot_color = (0, 255, 0)  # Green
+        elif any(vehicle in class_name.lower() for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']):
+            dot_color = (255, 0, 0)  # Blue
+        elif any(animal in class_name.lower() for animal in ['dog', 'cat', 'bird', 'horse', 'sheep', 'cow']):
+            dot_color = (0, 0, 255)  # Red
+        else:
+            dot_color = (255, 255, 0)  # Yellow
+        
+        # Draw colored dot
+        cv2.circle(frame_copy, (overlay_x + 10, overlay_y + y_offset), 5, dot_color, -1)
+        
+        # Draw count text
+        display_text = f"{class_name.capitalize()}: {count}"
+        if count == 1:
+            display_text = f"{class_name.capitalize()}: {count}"  # Singular
+        else:
+            display_text = f"{class_name.capitalize()}s: {count}"  # Plural
+        
+        cv2.putText(frame_copy, display_text, 
+                   (overlay_x + 25, overlay_y + y_offset + 5), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        
+        y_offset += 30
+    
+    # Add detection and tracked counts to frame (top right)
     cv2.putText(frame_copy, f"Detections: {detection_count}", (width - 200, 30), 
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
     
-    # Add tracked objects count
-    cv2.putText(frame_copy, f"Tracked: {len(tracked_objects)}", (width - 200, 60), 
+    tracked_count = len(tracked_objects)
+    cv2.putText(frame_copy, f"Tracked: {tracked_count}", (width - 200, 60), 
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
     
-    return frame_copy, detection_count
+    return frame_copy, detection_count, current_counts
+
+def display_summary():
+    """Display the comprehensive object tracking summary"""
+    summary = st.session_state.object_tracker.generate_summary()
+    
+    if not summary["objects"]:
+        st.info("No objects tracked yet. Start detection to see tracking data.")
+        return
+    
+    st.markdown("### 📋 Comprehensive Object Tracking Summary")
+    
+    # Overall statistics
+    total_objects = summary["statistics"]["total_objects"]
+    st.markdown(f'<div class="unique-objects">🎯 <strong>Total Unique Objects Tracked:</strong> {total_objects}</div>', unsafe_allow_html=True)
+    
+    # Display by category
+    for class_name, objects in summary["objects"].items():
+        category_stats = summary["statistics"]["categories"][class_name]
+        object_count = category_stats["count"]
+        total_frames = category_stats["total_frames"]
+        avg_frames = category_stats["avg_frames_per_object"]
+        current_active = category_stats.get("current_active", 0)
+        
+        # Determine icon
+        icon = "👤"
+        if any(vehicle in class_name.lower() for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']):
+            icon = "🚗"
+        elif any(animal in class_name.lower() for animal in ['dog', 'cat', 'bird', 'horse', 'sheep', 'cow']):
+            icon = "🐕"
+        elif 'cell phone' in class_name.lower():
+            icon = "📱"
+        elif 'laptop' in class_name.lower():
+            icon = "💻"
+        elif 'book' in class_name.lower():
+            icon = "📚"
+        else:
+            icon = "📦"
+        
+        st.markdown(f"#### {icon} {class_name.capitalize()} ({object_count} objects, {current_active} currently active)")
+        
+        # Create summary box for this class
+        summary_html = f'<div class="summary-box">'
+        summary_html += f'''
+        <div class="summary-item">
+            <span class="summary-class">Total objects</span>
+            <span class="summary-count">{object_count}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-class">Currently active</span>
+            <span class="summary-count">{current_active}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-class">Total frames detected</span>
+            <span class="summary-count">{total_frames}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-class">Average frames per object</span>
+            <span class="summary-count">{avg_frames:.1f}</span>
+        </div>
+        '''
+        summary_html += '</div>'
+        st.markdown(summary_html, unsafe_allow_html=True)
+        
+        # Show individual objects with details
+        with st.expander(f"View {object_count} {class_name} objects", expanded=False):
+            for obj in objects:
+                obj_id = obj["id"]
+                frame_count = obj["frame_count"]
+                avg_confidence = obj.get("avg_confidence", 0)
+                is_active = obj.get("is_active", False)
+                
+                details_html = f'''
+                <div class="object-details">
+                    <div><strong>Object ID:</strong> <span class="object-id">{obj_id}</span></div>
+                    <div><strong>Frames detected:</strong> {frame_count}</div>
+                    <div><strong>Average confidence:</strong> {avg_confidence:.2f}</div>
+                    <div><strong>First frame:</strong> {obj.get('first_frame', 'N/A')}</div>
+                    <div><strong>Last frame:</strong> {obj.get('last_frame', 'N/A')}</div>
+                    <div><strong>Status:</strong> <span style="color: {'green' if is_active else 'red'}">{'ACTIVE' if is_active else 'INACTIVE'}</span></div>
+                </div>
+                '''
+                st.markdown(details_html, unsafe_allow_html=True)
 
 # Main tabs - only Webcam and Video
 tab1, tab2 = st.tabs(["📹 Live Webcam", "📁 Upload Video"])
@@ -471,7 +947,7 @@ with tab1:
     with col1:
         # Check if webcam is active
         if st.session_state.webcam_active:
-            st.markdown('<div class="processing-info">Webcam is active. Detections will appear with bounding boxes and object IDs.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="processing-info">Webcam is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
             
             # Create placeholders for webcam
             webcam_placeholder = st.empty()
@@ -480,9 +956,6 @@ with tab1:
             # Control button - only Stop button
             if st.button("⏹️ Stop Webcam", key="stop_webcam_btn", type="secondary"):
                 st.session_state.webcam_active = False
-                # Reset tracking when stopping webcam
-                st.session_state.tracked_objects = {}
-                st.session_state.next_object_id = 1
                 st.rerun()
             
             # Webcam processing logic
@@ -508,7 +981,6 @@ with tab1:
                     st.session_state.webcam_start_time = time.time()
                     st.session_state.webcam_frame_count = 0
                     st.session_state.webcam_detected_objects = 0
-                    st.session_state.webcam_detections_per_class = {}
                     st.session_state.webcam_processing_time = 0
                 
                 frame_count = 0
@@ -534,51 +1006,40 @@ with tab1:
                     
                     # Perform detection
                     start_time = time.time()
-                    detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
+                    raw_detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
                     processing_time = time.time() - start_time
                     
-                    # Filter detections based on user preferences
-                    filtered_detections = []
-                    for det in detections:
-                        class_name = det[-1].lower() if len(det) > 5 else ""
-                        
-                        # Check if class should be shown
-                        should_show = False
-                        if st.session_state.show_everything:
-                            should_show = True
-                        elif 'person' in class_name and st.session_state.show_persons:
-                            should_show = True
-                        elif any(vehicle in class_name for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']) and st.session_state.show_vehicles:
-                            should_show = True
-                        elif any(animal in class_name for animal in ['dog', 'cat', 'bird', 'horse']) and st.session_state.show_animals:
-                            should_show = True
-                        
-                        if should_show and det[4] >= st.session_state.confidence_threshold:
-                            filtered_detections.append(det)
+                    # Filter detections
+                    filtered_detections = filter_detections(raw_detections)
                     
-                    # Track objects across frames
-                    previous_objects = st.session_state.tracked_objects.copy()
-                    current_objects = assign_object_ids(filtered_detections, previous_objects)
-                    st.session_state.tracked_objects = current_objects
+                    # Update object tracking - get the full tracking data
+                    tracking_data = st.session_state.object_tracker.update_tracking(
+                        filtered_detections, 
+                        frame_count
+                    )
                     
                     # Update statistics
                     st.session_state.webcam_detected_objects += len(filtered_detections)
-                    for det in filtered_detections:
-                        class_name = det[-1].lower() if len(det) > 5 else "unknown"
-                        class_key = class_name if class_name else "unknown"
-                        st.session_state.webcam_detections_per_class[class_key] = st.session_state.webcam_detections_per_class.get(class_key, 0) + 1
-                    
                     st.session_state.webcam_processing_time += processing_time
                     
                     # Draw detections on frame with object IDs
-                    frame_with_detections, detection_count = draw_detections(frame_rgb, current_objects, frame_count, "webcam")
+                    frame_with_detections, detection_count, current_counts = draw_detections(
+                        frame_rgb, 
+                        tracking_data, 
+                        frame_count, 
+                        "webcam"
+                    )
                     
                     # Update session state
                     st.session_state.current_frame = frame_with_detections
                     st.session_state.detection_counter = detection_count
                     
                     # Display frame with detections
-                    webcam_placeholder.image(frame_with_detections, channels="RGB", caption="Live Webcam with Detections and Object IDs")
+                    webcam_placeholder.image(
+                        frame_with_detections, 
+                        channels="RGB", 
+                        caption=f"Frame {frame_count} - Tracking {len(tracking_data['active_objects'])} objects"
+                    )
                     
                     # Update statistics display
                     with webcam_stats_placeholder.container():
@@ -591,18 +1052,21 @@ with tab1:
                         with col2:
                             st.metric("Current Detections", detection_count)
                         with col3:
-                            st.metric("Total Detected", st.session_state.webcam_detected_objects)
+                            st.metric("Total Detections", st.session_state.webcam_detected_objects)
                         with col4:
                             st.metric("FPS", f"{fps_value:.1f}")
                         
-                        # Show tracked objects info
-                        st.markdown(f'<div class="detection-status">📊 Currently tracking {len(current_objects)} object(s)</div>', unsafe_allow_html=True)
+                        # Show current counts in a compact format
+                        if current_counts:
+                            st.markdown("#### 📈 Current Active Objects")
+                            count_cols = st.columns(4)
+                            for i, (class_name, count) in enumerate(current_counts.items()):
+                                if i < 4:  # Show first 4 classes
+                                    with count_cols[i % 4]:
+                                        st.metric(f"{class_name.capitalize()}", count)
                         
-                        # Show current detections
-                        if detection_count > 0:
-                            st.markdown(f'<div class="detection-status">✅ Detected {detection_count} object(s) in current frame</div>', unsafe_allow_html=True)
-                        else:
-                            st.markdown('<div class="detection-status">🔍 No objects detected in current frame</div>', unsafe_allow_html=True)
+                        # Show tracking summary
+                        display_summary()
                     
                     # Small delay
                     time.sleep(0.033)
@@ -613,7 +1077,6 @@ with tab1:
                 # Clear webcam-specific stats
                 st.session_state.webcam_frame_count = 0
                 st.session_state.webcam_detected_objects = 0
-                st.session_state.webcam_detections_per_class = {}
                 st.session_state.webcam_processing_time = 0
                 
             except Exception as e:
@@ -626,9 +1089,8 @@ with tab1:
             if st.button("🎬 Start Webcam Detection", key="start_webcam_main", type="primary"):
                 st.session_state.webcam_active = True
                 st.session_state.video_processing = False  # Ensure video is stopped
-                # Reset tracking when starting
-                st.session_state.tracked_objects = {}
-                st.session_state.next_object_id = 1
+                # Reset tracker when starting
+                st.session_state.object_tracker.reset()
                 st.rerun()
     
     with col2:
@@ -636,14 +1098,14 @@ with tab1:
         st.info("""
         1. Click **Start Webcam Detection**
         2. Allow camera access when prompted
-        3. Detection boxes with unique IDs will appear
+        3. Objects are tracked with unique IDs
         4. Adjust settings in sidebar
         5. Click **Stop Webcam** to end
         
-        **Object Tracking:**
-        - Each object gets a unique ID
-        - IDs are tracked across frames
-        - ID format: `ID:X classname confidence`
+        **Improved Object Tracking:**
+        - Uses IoU and center distance for matching
+        - Objects can be missing for 5 frames before being removed
+        - Better prevents duplicate IDs for same object
         
         **Detection Colors:**
         - 🟢 Green: Persons
@@ -685,7 +1147,7 @@ with tab2:
             
             # Check if video processing is active
             if st.session_state.video_processing:
-                st.markdown('<div class="processing-info">Video processing is active. Bounding boxes with object IDs will appear on each frame.</div>', unsafe_allow_html=True)
+                st.markdown('<div class="processing-info">Video processing is active. Objects are being tracked with unique IDs.</div>', unsafe_allow_html=True)
                 
                 # Create placeholders for video
                 video_placeholder = st.empty()
@@ -695,9 +1157,6 @@ with tab2:
                 # Control button
                 if st.button("⏹️ Stop Processing", key="stop_video_btn", type="secondary"):
                     st.session_state.video_processing = False
-                    # Reset tracking when stopping video
-                    st.session_state.tracked_objects = {}
-                    st.session_state.next_object_id = 1
                     st.rerun()
                 
                 # Video processing logic
@@ -730,7 +1189,6 @@ with tab2:
                         st.session_state.video_start_time = time.time()
                         st.session_state.video_frame_count = 0
                         st.session_state.video_detected_objects = 0
-                        st.session_state.video_detections_per_class = {}
                         st.session_state.video_processing_time = 0
                     
                     frame_count = 0
@@ -759,51 +1217,40 @@ with tab2:
                         
                         # Perform detection
                         start_time = time.time()
-                        detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
+                        raw_detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
                         processing_time = time.time() - start_time
                         
                         # Filter detections
-                        filtered_detections = []
-                        for det in detections:
-                            class_name = det[-1].lower() if len(det) > 5 else ""
-                            
-                            # Check if class should be shown
-                            should_show = False
-                            if st.session_state.show_everything:
-                                should_show = True
-                            elif 'person' in class_name and st.session_state.show_persons:
-                                should_show = True
-                            elif any(vehicle in class_name for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']) and st.session_state.show_vehicles:
-                                should_show = True
-                            elif any(animal in class_name for animal in ['dog', 'cat', 'bird', 'horse']) and st.session_state.show_animals:
-                                should_show = True
-                            
-                            if should_show and det[4] >= st.session_state.confidence_threshold:
-                                filtered_detections.append(det)
+                        filtered_detections = filter_detections(raw_detections)
                         
-                        # Track objects across frames
-                        previous_objects = st.session_state.tracked_objects.copy()
-                        current_objects = assign_object_ids(filtered_detections, previous_objects)
-                        st.session_state.tracked_objects = current_objects
+                        # Update object tracking - get the full tracking data
+                        tracking_data = st.session_state.object_tracker.update_tracking(
+                            filtered_detections, 
+                            frame_count
+                        )
                         
                         # Update statistics
                         st.session_state.video_detected_objects += len(filtered_detections)
-                        for det in filtered_detections:
-                            class_name = det[-1].lower() if len(det) > 5 else "unknown"
-                            class_key = class_name if class_name else "unknown"
-                            st.session_state.video_detections_per_class[class_key] = st.session_state.video_detections_per_class.get(class_key, 0) + 1
-                        
                         st.session_state.video_processing_time += processing_time
                         
                         # Draw detections on frame with object IDs
-                        frame_with_detections, detection_count = draw_detections(frame_rgb, current_objects, frame_count, "video")
+                        frame_with_detections, detection_count, current_counts = draw_detections(
+                            frame_rgb, 
+                            tracking_data, 
+                            frame_count, 
+                            "video"
+                        )
                         
                         # Update session state
                         st.session_state.current_frame = frame_with_detections
                         st.session_state.detection_counter = detection_count
                         
                         # Display frame
-                        video_placeholder.image(frame_with_detections, channels="RGB", caption=f"Frame {frame_count}/{total_frames} - Object IDs shown")
+                        video_placeholder.image(
+                            frame_with_detections, 
+                            channels="RGB", 
+                            caption=f"Frame {frame_count}/{total_frames} - Tracking {len(tracking_data['active_objects'])} objects"
+                        )
                         
                         # Update statistics display
                         with video_stats_placeholder.container():
@@ -820,16 +1267,21 @@ with tab2:
                             with col2:
                                 st.metric("Current Detections", detection_count)
                             with col3:
-                                st.metric("Total Detected", st.session_state.video_detected_objects)
+                                st.metric("Total Detections", st.session_state.video_detected_objects)
                             with col4:
                                 st.metric("FPS", f"{fps_value:.1f}")
                             
-                            # Show tracked objects info
-                            st.markdown(f'<div class="detection-status">📊 Currently tracking {len(current_objects)} object(s)</div>', unsafe_allow_html=True)
+                            # Show current counts in a compact format
+                            if current_counts:
+                                st.markdown("#### 📈 Current Active Objects")
+                                count_cols = st.columns(4)
+                                for i, (class_name, count) in enumerate(current_counts.items()):
+                                    if i < 4:  # Show first 4 classes
+                                        with count_cols[i % 4]:
+                                            st.metric(f"{class_name.capitalize()}", count)
                             
-                            # Show current detections
-                            if detection_count > 0:
-                                st.markdown(f'<div class="detection-status">✅ Detected {detection_count} object(s) in current frame</div>', unsafe_allow_html=True)
+                            # Show tracking summary
+                            display_summary()
                         
                         # Check if stop button was pressed
                         if not st.session_state.video_processing:
@@ -841,7 +1293,6 @@ with tab2:
                     # Clear video-specific stats
                     st.session_state.video_frame_count = 0
                     st.session_state.video_detected_objects = 0
-                    st.session_state.video_detections_per_class = {}
                     st.session_state.video_processing_time = 0
                     
                     st.success(f"Video processing completed! Processed {frame_count} frames.")
@@ -856,9 +1307,8 @@ with tab2:
                 if st.button("🚀 Start Video Processing", key="start_video_main", type="primary"):
                     st.session_state.video_processing = True
                     st.session_state.webcam_active = False  # Ensure webcam is stopped
-                    # Reset tracking when starting
-                    st.session_state.tracked_objects = {}
-                    st.session_state.next_object_id = 1
+                    # Reset tracker when starting
+                    st.session_state.object_tracker.reset()
                     st.rerun()
         
         with col2:
@@ -888,14 +1338,15 @@ with tab2:
             st.info("""
             1. Video uploaded successfully
             2. Click **Start Video Processing**
-            3. Detection boxes with unique IDs will appear
-            4. View real-time results with object tracking
+            3. Objects are tracked with unique IDs
+            4. View real-time results with comprehensive tracking
             5. Click **Stop Processing** to pause
             
-            **Object Tracking:**
-            - Each object gets a unique ID (ID:X)
-            - IDs persist across frames
-            - Objects are tracked using IoU matching
+            **Improved Object Tracking:**
+            - Uses IoU (0.4 threshold) and center distance
+            - Objects can disappear for 5 frames
+            - Prevents duplicate IDs for same object
+            - Sorts detections by confidence for better matching
             
             **Detection Colors:**
             - 🟢 Green: Persons
@@ -913,14 +1364,14 @@ with tab2:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center'>
-    <p>YOLOv8 Detection Dashboard with Object Tracking | Built with Streamlit, OpenCV, and PyTorch</p>
+    <p>YOLOv8 Detection Dashboard with Advanced Object Tracking | Built with Streamlit, OpenCV, and PyTorch</p>
     <p style='font-size: 0.8rem; color: #666;'>
         <strong>Detection Status:</strong> 
         <span style='color: green;'>● Persons</span> | 
         <span style='color: blue;'>● Vehicles</span> | 
         <span style='color: red;'>● Animals</span> | 
         <span style='color: yellow;'>● Other objects</span> |
-        <span style='color: white; background-color: #666; padding: 2px 5px; border-radius: 3px;'>ID:X</span> Unique Object IDs
+        <span style='color: white; background-color: #666; padding: 2px 5px; border-radius: 3px;'>ID:XXX</span> Persistent Object IDs
     </p>
 </div>
 """, unsafe_allow_html=True)
