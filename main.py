@@ -5,12 +5,8 @@ import cv2
 import numpy as np
 import tempfile
 import time
-from pathlib import Path
-import json
 from PIL import Image
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
-import sys
 import random
 
 # COCO class names for better detection labels
@@ -278,7 +274,8 @@ def draw_detections_with_tracking_simple(frame, detections, frame_number=0, sour
 
 # Set page configuration - MUST BE FIRST STREAMLIT COMMAND
 st.set_page_config(
-    page_title="Object Detection Dashboard",
+    page_title="Multi-Model Detection Dashboard",
+    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -332,9 +329,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title and description
-st.markdown('<h1 class="main-header">Object Detection Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🔍 Multi-Model Detection Dashboard</h1>', unsafe_allow_html=True)
 st.markdown("""
-This dashboard allows you to detect persons and objects using YOLOv8 models. 
+This dashboard allows you to detect persons and objects using multiple deep learning models. 
 Upload a video file or use your webcam, then select from various detection models.
 """)
 
@@ -348,7 +345,7 @@ if 'show_animals' not in st.session_state:
 if 'show_everything' not in st.session_state:
     st.session_state.show_everything = False
 if 'model_choice' not in st.session_state:
-    st.session_state.model_choice = "YOLOv8 (General)"
+    st.session_state.model_choice = "YOLOv8 (Recommended)"
 if 'confidence_threshold' not in st.session_state:
     st.session_state.confidence_threshold = 0.5
 if 'frame_skip' not in st.session_state:
@@ -384,13 +381,15 @@ if 'current_model' not in st.session_state:
 with st.sidebar:
     st.markdown("### ⚙️ Configuration")
     
-    # Model selection - Only YOLOv8 options
+    # Model selection
     st.markdown("#### Select Detection Model")
     st.session_state.model_choice = st.selectbox(
         "Choose a model:",
         [
-            "YOLOv8 (General)",
-            "YOLOv8 - Person Only"
+            "YOLOv8 (Recommended)",
+            "YOLOv8 - Person Only", 
+            "MobileNet SSD",
+            "Faster R-CNN"
         ],
         index=0
     )
@@ -439,9 +438,62 @@ with st.sidebar:
         help="Thickness of detection boxes"
     )
     
-    # Tracking settings
-    st.markdown("#### Tracking Settings")
-    st.session_state.show_object_ids = st.checkbox("Show Object IDs", value=st.session_state.show_object_ids, help="Display unique object IDs on bounding boxes")
+    # Display stats
+    with st.expander("Model Information"):
+        if "YOLO" in st.session_state.model_choice:
+            st.info("""
+            **YOLOv8 Model**: 
+            - Real-time object detection
+            - Good balance of speed and accuracy
+            - 80+ COCO classes
+            """)
+        elif "MobileNet" in st.session_state.model_choice:
+            st.info("""
+            **MobileNet SSD**:
+            - Fast and lightweight
+            - Good for mobile/edge devices
+            - 20+ classes
+            """)
+        elif "Faster R-CNN" in st.session_state.model_choice:
+            st.info("""
+            **Faster R-CNN**:
+            - High accuracy
+            - Slower but more precise
+            - Good for detailed analysis
+            """)
+    
+    # Reset button
+    if st.button("🔄 Reset All", key="reset_all"):
+        for key in list(st.session_state.keys()):
+            if key not in ['show_persons', 'show_vehicles', 'show_animals', 'show_everything',
+                          'model_choice', 'confidence_threshold', 'frame_skip', 'box_thickness',
+                          'show_labels', 'show_confidence']:
+                del st.session_state[key]
+        st.rerun()
+
+# Initialize session state for processing
+if 'detection_stats' not in st.session_state:
+    st.session_state.detection_stats = {}
+if 'current_frame' not in st.session_state:
+    st.session_state.current_frame = None
+if 'webcam_active' not in st.session_state:
+    st.session_state.webcam_active = False
+if 'video_processing' not in st.session_state:
+    st.session_state.video_processing = False
+if 'detection_counter' not in st.session_state:
+    st.session_state.detection_counter = 0
+if 'active_tab' not in st.session_state:
+    st.session_state.active_tab = "webcam"
+if 'video_path' not in st.session_state:
+    st.session_state.video_path = None
+if 'uploaded_file' not in st.session_state:
+    st.session_state.uploaded_file = None
+if 'webcam_stats' not in st.session_state:
+    st.session_state.webcam_stats = {}
+if 'video_stats' not in st.session_state:
+    st.session_state.video_stats = {}
+if 'current_model' not in st.session_state:
+    st.session_state.current_model = None
 
 # Import detection modules function
 def load_yolo_model():
@@ -453,7 +505,7 @@ def load_yolo_model():
         st.warning("YOLOv8 model not found. Using dummy detector.")
         return None
 
-def detect_with_yolo(model, image, model_choice="YOLOv8 (General)"):
+def detect_with_yolo(model, image, model_choice="YOLOv8"):
     """Detection function with proper bounding boxes"""
     detections = []
     
@@ -534,8 +586,92 @@ def detect_with_yolo(model, image, model_choice="YOLOv8 (General)"):
     
     return detections
 
+def draw_detections(frame, detections, frame_number=0, source="webcam"):
+    """Draw detection boxes on frame with proper styling"""
+    frame_copy = frame.copy()
+    height, width = frame_copy.shape[:2]
+    
+    # Draw a border around the frame
+    cv2.rectangle(frame_copy, (0, 0), (width-1, height-1), (100, 100, 100), 2)
+    
+    # Add source watermark
+    source_text = "Webcam" if source == "webcam" else "Video"
+    cv2.putText(frame_copy, f"Source: {source_text}", (10, 30), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    cv2.putText(frame_copy, f"Frame: {frame_number}", (10, 60), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    
+    detection_count = 0
+    
+    for det in detections:
+        if len(det) >= 6:  # [x1, y1, x2, y2, conf, class_id, class_name]
+            x1, y1, x2, y2 = map(int, det[:4])
+            conf = det[4]
+            class_name = det[-1]
+            
+            # Ensure coordinates are within frame bounds
+            x1 = max(0, min(x1, width-1))
+            y1 = max(0, min(y1, height-1))
+            x2 = max(0, min(x2, width-1))
+            y2 = max(0, min(y2, height-1))
+            
+            # Skip if coordinates are invalid
+            if x1 >= x2 or y1 >= y2:
+                continue
+                
+            # Skip if confidence is below threshold
+            if conf < st.session_state.confidence_threshold:
+                continue
+                
+            # Choose color based on class
+            if 'person' in class_name.lower():
+                color = (0, 255, 0)  # Green for persons
+            elif any(vehicle in class_name.lower() for vehicle in ['car', 'truck', 'bus', 'motorcycle', 'bicycle']):
+                color = (255, 0, 0)  # Blue for vehicles
+            elif any(animal in class_name.lower() for animal in ['dog', 'cat', 'bird', 'horse', 'sheep', 'cow']):
+                color = (0, 0, 255)  # Red for animals
+            else:
+                color = (255, 255, 0)  # Yellow for others
+            
+            # Draw rectangle with thickness
+            cv2.rectangle(frame_copy, (x1, y1), (x2, y2), color, st.session_state.box_thickness)
+            
+            # Draw label background
+            if st.session_state.show_labels:
+                label = f"{class_name}"
+                if st.session_state.show_confidence:
+                    label += f" {conf:.2f}"
+                
+                # Get text size
+                (text_width, text_height), baseline = cv2.getTextSize(
+                    label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2
+                )
+                
+                # Draw filled rectangle for label background
+                cv2.rectangle(frame_copy, 
+                            (x1, y1 - text_height - 10), 
+                            (x1 + text_width, y1), 
+                            color, 
+                            -1)
+                
+                # Draw text
+                cv2.putText(frame_copy, label, 
+                          (x1, y1 - 5), 
+                          cv2.FONT_HERSHEY_SIMPLEX, 
+                          0.5, 
+                          (255, 255, 255), 
+                          2)
+            
+            detection_count += 1
+    
+    # Add detection count to frame
+    cv2.putText(frame_copy, f"Detections: {detection_count}", (width - 200, 30), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+    
+    return frame_copy, detection_count
+
 # Main tabs
-tab1, tab2 = st.tabs(["📹 Live Webcam", "📁 Upload Video"])
+tab1, tab2, tab3 = st.tabs(["📹 Live Webcam", "📁 Upload Video", "📊 Analytics"])
 
 # Tab 1: Live Webcam
 with tab1:
@@ -577,7 +713,7 @@ with tab1:
             with col_capture:
                 if st.button("📸 Capture Frame", key="capture_webcam"):
                     if st.session_state.current_frame is not None:
-                        st.image(st.session_state.current_frame, caption="Captured Frame", width=None)
+                        st.image(st.session_state.current_frame, caption="Captured Frame", use_column_width=True)
             
             # Webcam processing logic
             try:
@@ -624,7 +760,7 @@ with tab1:
                     
                     # Perform detection
                     start_time = time.time()
-                    detections = detect_with_yolo(st.session_state.current_model, frame_rgb, st.session_state.model_choice)
+                    detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
                     processing_time = time.time() - start_time
                     
                     # Filter detections based on user preferences
@@ -662,13 +798,12 @@ with tab1:
                     st.session_state.detection_counter = detection_count
                     
                     # Display frame with detections
-                    webcam_placeholder.image(frame_with_detections, channels="RGB", width=None, caption="Live Webcam with Detections")
+                    webcam_placeholder.image(frame_with_detections, channels="RGB", use_column_width=True, caption="Live Webcam with Detections")
                     
                     # Update statistics display
                     with webcam_stats_placeholder.container():
                         fps_value = 1.0 / processing_time if processing_time > 0 else 0
-                        
-                        st.markdown("#### 📊 Live Statistics")
+                        elapsed_time = time.time() - st.session_state.webcam_start_time
                         
                         # Create columns for metrics
                         stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
@@ -697,7 +832,21 @@ with tab1:
                 # Release webcam when done
                 cap.release()
                 
-                st.success("Webcam stopped successfully.")
+                # Update detection stats
+                st.session_state.detection_stats = {
+                    'total_frames': st.session_state.webcam_frame_count,
+                    'detected_objects': st.session_state.webcam_detected_objects,
+                    'detections_per_class': st.session_state.webcam_detections_per_class,
+                    'processing_time': st.session_state.webcam_processing_time,
+                    'source': 'webcam',
+                    'start_time': st.session_state.webcam_start_time
+                }
+                
+                # Clear webcam-specific stats
+                st.session_state.webcam_frame_count = 0
+                st.session_state.webcam_detected_objects = 0
+                st.session_state.webcam_detections_per_class = {}
+                st.session_state.webcam_processing_time = 0
                 
             except Exception as e:
                 st.error(f"Error in webcam processing: {str(e)}")
@@ -836,7 +985,7 @@ with tab2:
                         
                         # Perform detection
                         start_time = time.time()
-                        detections = detect_with_yolo(st.session_state.current_model, frame_rgb, st.session_state.model_choice)
+                        detections = detect_with_yolo(st.session_state.current_model, frame_rgb)
                         processing_time = time.time() - start_time
                         
                         # Filter detections
@@ -874,18 +1023,16 @@ with tab2:
                         st.session_state.detection_counter = detection_count
                         
                         # Display frame
-                        video_placeholder.image(frame_with_detections, channels="RGB", width=None, caption=f"Frame {frame_count}/{total_frames}")
+                        video_placeholder.image(frame_with_detections, channels="RGB", use_column_width=True, caption=f"Frame {frame_count}/{total_frames}")
                         
                         # Update statistics display
                         with video_stats_placeholder.container():
                             fps_value = 1.0 / processing_time if processing_time > 0 else 0
+                            elapsed_time = time.time() - st.session_state.video_start_time
                             
-                            st.markdown("#### 📊 Processing Statistics")
-                            
-                            # Create columns for metrics
-                            stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
-                            
-                            with stat_col1:
+                            st.markdown(f"**Processing Statistics**")
+                            col1, col2, col3, col4 = st.columns(4)
+                            with col1:
                                 if total_frames > 0:
                                     progress_percent = (frame_count / total_frames) * 100
                                     st.metric("Progress", f"{progress_percent:.1f}%")
@@ -913,6 +1060,22 @@ with tab2:
                     
                     # Release video capture when done
                     cap.release()
+                    
+                    # Update detection stats
+                    st.session_state.detection_stats = {
+                        'total_frames': st.session_state.video_frame_count,
+                        'detected_objects': st.session_state.video_detected_objects,
+                        'detections_per_class': st.session_state.video_detections_per_class,
+                        'processing_time': st.session_state.video_processing_time,
+                        'source': 'video',
+                        'start_time': st.session_state.video_start_time
+                    }
+                    
+                    # Clear video-specific stats
+                    st.session_state.video_frame_count = 0
+                    st.session_state.video_detected_objects = 0
+                    st.session_state.video_detections_per_class = {}
+                    st.session_state.video_processing_time = 0
                     
                     st.success(f"Video processing completed! Processed {frame_count} frames.")
                     
@@ -976,7 +1139,7 @@ with tab2:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center'>
-    <p>Object Detection Dashboard | Built with Streamlit, OpenCV, and YOLOv8</p>
+    <p>Multi-Model Detection Dashboard | Built with Streamlit, OpenCV, and PyTorch</p>
     <p style='font-size: 0.8rem; color: #666;'>
         <strong>Detection Status:</strong> 
         <span style='color: green;'>● Persons</span> | 
