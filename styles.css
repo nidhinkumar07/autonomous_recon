@@ -68,7 +68,12 @@ body,
 }
 
 .info-card {
-    composes: card-container;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 1rem;
+    background-color: #4b4848;
+    transition: all 0.2s ease;
     border-left: 3px solid #3B82F6;
 }
 
