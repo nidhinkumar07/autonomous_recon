@@ -1,0 +1,472 @@
+/* styles.css - Professional SaaS UI for YOLOv8 Detection Dashboard */
+
+/* Base typography - Clean sans-serif stack */
+html,
+body,
+[class*="css"] {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: -0.011em;
+}
+
+/* Reduce container padding for tighter layout */
+.block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.st-emotion-cache-1jicfl2 {
+    padding-top: 1.5rem !important;
+}
+
+/* Main header positioning */
+.main-header {
+    font-size: 1.75rem;
+    color: #1E3A8A;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    padding-top: 0;
+    text-align: left;
+    letter-spacing: -0.02em;
+}
+
+/* Subheaders with clear hierarchy */
+.section-header {
+    font-size: 1.25rem;
+    color: #374151;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.015em;
+}
+
+.subsection-header {
+    font-size: 1rem;
+    color: #4B5563;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Card styling system */
+.card-container {
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 1rem;
+    background-color: #FFFFFF;
+    transition: all 0.2s ease;
+}
+
+.card-container:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.settings-card {
+    composes: card-container;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.info-card {
+    composes: card-container;
+    border-left: 3px solid #3B82F6;
+}
+
+.stats-card {
+    composes: card-container;
+    background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.processing-card {
+    composes: card-container;
+    background-color: #F0F9FF;
+    border-color: #BAE6FD;
+}
+
+.tracking-card {
+    composes: card-container;
+    background-color: #FFFFFF;
+}
+
+/* Tabs - Modern underline system */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    margin-right: 0.5rem;
+    color: #64748B;
+    background: none;
+    border-radius: 6px 6px 0 0;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: transparent !important;
+    border-bottom: 2px solid #2563EB;
+    color: #2563EB !important;
+    font-weight: 600;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: #F1F5F9;
+    border-bottom: 2px solid #93C5FD;
+    color: #1E40AF;
+}
+
+/* Button system */
+.stButton>button {
+    width: 100%;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0;
+    border: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.primary-button button {
+    background-color: #2563EB;
+    color: white;
+}
+
+.primary-button button:hover {
+    background-color: #1D4ED8;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+
+.secondary-button button {
+    background-color: #6B7280;
+    color: white;
+}
+
+.secondary-button button:hover {
+    background-color: #4B5563;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+    transform: translateY(-1px);
+}
+
+.stop-button button {
+    background-color: #DC2626 !important;
+    color: white !important;
+}
+
+.stop-button button:hover {
+    background-color: #B91C1C !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+/* Sidebar professional styling */
+.sidebar .sidebar-content {
+    padding: 1.5rem 1.25rem;
+    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+.sidebar .element-container {
+    margin-bottom: 1rem;
+}
+
+/* Checkbox and slider spacing */
+.stCheckbox>div {
+    padding: 0.5rem 0;
+    transition: all 0.2s ease;
+}
+
+.stCheckbox label {
+    font-weight: 400;
+    color: #374151;
+}
+
+.stCheckbox>div:hover {
+    background-color: #F8FAFC;
+    border-radius: 4px;
+    padding-left: 0.5rem;
+}
+
+.stSlider>div {
+    padding: 0.75rem 0;
+}
+
+/* Metrics grid - Responsive with flexbox fallback */
+.metrics-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 1rem;
+    background-color: #F8FAFC;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    transition: all 0.2s ease;
+}
+
+.metric-item:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Status indicators */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-person {
+    background-color: #10B981;
+    color: white;
+}
+
+.status-vehicle {
+    background-color: #3B82F6;
+    color: white;
+}
+
+.status-animal {
+    background-color: #EF4444;
+    color: white;
+}
+
+.status-other {
+    background-color: #F59E0B;
+    color: white;
+}
+
+/* Progress bar */
+.stProgress>div>div>div>div {
+    background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
+    border-radius: 9999px;
+}
+
+/* Layout spacing */
+.stColumn {
+    gap: 1.5rem;
+}
+
+div[data-testid="column"] {
+    gap: 1.5rem;
+}
+
+div[data-testid="stVerticalBlock"]>div[style*="flex"] {
+    gap: 1.5rem;
+}
+
+/* Color legend */
+.color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.color-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #4B5563;
+    font-weight: 400;
+}
+
+.color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Video player */
+.stVideo {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+    background: #000;
+}
+
+/* Form controls */
+.stSelectbox,
+.stTextInput,
+.stNumberInput {
+    margin-bottom: 1rem;
+}
+
+.stSelectbox>div,
+.stTextInput>div,
+.stNumberInput>div {
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+}
+
+.stSelectbox>div:hover,
+.stTextInput>div:hover,
+.stNumberInput>div:hover {
+    border-color: #CBD5E1;
+}
+
+/* Footer */
+.footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #E2E8F0;
+    font-size: 0.75rem;
+    color: #6B7280;
+    text-align: left;
+}
+
+.footer p {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Divider styling */
+hr {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #E2E8F0;
+}
+
+/* Expander styling */
+.streamlit-expanderHeader {
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 0.75rem 0;
+}
+
+.streamlit-expanderContent {
+    padding: 1rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-header {
+        font-size: 1.5rem;
+    }
+
+    .section-header {
+        font-size: 1.125rem;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .metrics-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sidebar .sidebar-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .metrics-container {
+        grid-template-columns: 1fr;
+    }
+
+    .color-legend {
+        justify-content: center;
+    }
+
+    .card-container {
+        padding: 1rem;
+    }
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F1F5F9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+/* Tooltip styling */
+[data-testid="stTooltip"] {
+    font-size: 0.75rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Alert and info boxes */
+.stAlert {
+    border-radius: 8px;
+    border: 1px solid;
+    margin-bottom: 1rem;
+}
+
+.stAlert.info {
+    background-color: #EFF6FF;
+    border-color: #BFDBFE;
+    color: #1E40AF;
+}
+
+.stAlert.success {
+    background-color: #D1FAE5;
+    border-color: #A7F3D0;
+    color: #065F46;
+}
+
+.stAlert.warning {
+    background-color: #FEF3C7;
+    border-color: #FDE68A;
+    color: #92400E;
+}
+
+.stAlert.error {
+    background-color: #FEE2E2;
+    border-color: #FECACA;
+    color: #991B1B;
+}

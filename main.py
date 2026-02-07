@@ -1,4 +1,4 @@
-# main.py - Fixed version with improved object tracking
+# main.py - Professional SaaS UI with separate CSS
 
 import streamlit as st
 import cv2
@@ -8,6 +8,7 @@ import time
 from PIL import Image
 import random
 from collections import defaultdict
+import os
 
 # COCO class names for better detection labels
 COCO_CLASSES = [
@@ -312,309 +313,30 @@ st.set_page_config(
 import warnings
 warnings.filterwarnings('ignore')
 
-# Custom CSS for SaaS aesthetics
-st.markdown("""
-<style>
-    /* Base typography - Clean sans-serif stack */
-    html, body, [class*="css"] {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-    }
-    
-    /* Reduce container padding */
-    .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-    
-    .st-emotion-cache-1jicfl2 {
-        padding-top: 1.5rem;
-    }
-    
-    /* Main header positioning */
-    .main-header {
-        font-size: 1.75rem;
-        color: #1E3A8A;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        padding-top: 0;
-        text-align: left;
-    }
-    
-    /* Subheaders */
-    .section-header {
-        font-size: 1.25rem;
-        color: #374151;
-        font-weight: 700;
-        margin-top: 0.5rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    .subsection-header {
-        font-size: 1rem;
-        color: #4B5563;
-        font-weight: 500;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Card styling */
-    .settings-card {
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        margin-bottom: 1rem;
-        background-color: #FFFFFF;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-    
-    .info-card {
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        margin-bottom: 1rem;
-        background-color: #FFFFFF;
-    }
-    
-    .stats-card {
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        background-color: #FFFFFF;
-        margin-bottom: 1rem;
-    }
-    
-    .processing-card {
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        background-color: #F8FAFC;
-        margin-bottom: 1.5rem;
-    }
-    
-    .tracking-card {
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-        background-color: #FFFFFF;
-        margin-bottom: 1rem;
-    }
-    
-    /* Tabs - Underline system */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0;
-        border-bottom: 1px solid #E2E8F0;
-        margin-bottom: 1.5rem;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        padding: 0.75rem 2rem;
-        font-weight: 500;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s ease;
-        margin-right: 0.5rem;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background-color: transparent;
-        border-bottom: 2px solid #2563EB;
-        color: #2563EB;
-    }
-    
-    .stTabs [data-baseweb="tab"]:hover {
-        background-color: #F1F5F9;
-        border-bottom: 2px solid #93C5FD;
-    }
-    
-    /* Buttons */
-    .stButton > button {
-        width: 100%;
-        border-radius: 6px;
-        padding: 0.75rem 1rem;
-        margin: 0.25rem 0;
-        border: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    
-    .primary-button button {
-        background-color: #2563EB;
-        color: white;
-    }
-    
-    .primary-button button:hover {
-        background-color: #1D4ED8;
-        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-    }
-    
-    .secondary-button button {
-        background-color: #6B7280;
-        color: white;
-    }
-    
-    .secondary-button button:hover {
-        background-color: #4B5563;
-        box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
-    }
-    
-    .stop-button button {
-        background-color: #DC2626 !important;
-        color: white !important;
-    }
-    
-    .stop-button button:hover {
-        background-color: #B91C1C !important;
-        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2) !important;
-    }
-    
-    /* Sidebar spacing */
-    .sidebar .sidebar-content {
-        padding: 1.5rem 1.25rem;
-    }
-    
-    .sidebar .element-container {
-        margin-bottom: 1rem;
-    }
-    
-    /* Checkbox and slider spacing */
-    .stCheckbox > div {
-        padding: 0.5rem 0;
-    }
-    
-    .stCheckbox label {
-        font-weight: 400;
-    }
-    
-    .stSlider > div {
-        padding: 0.75rem 0;
-    }
-    
-    /* Metrics grid - Responsive */
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .metric-container {
-        text-align: center;
-        padding: 1rem;
-        background-color: #F8FAFC;
-        border-radius: 8px;
-        border: 1px solid #E2E8F0;
-    }
-    
-    /* Status indicators */
-    .detection-status {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .status-person {
-        background-color: #10B981;
-        color: white;
-    }
-    
-    .status-vehicle {
-        background-color: #3B82F6;
-        color: white;
-    }
-    
-    .status-animal {
-        background-color: #EF4444;
-        color: white;
-    }
-    
-    .status-other {
-        background-color: #F59E0B;
-        color: white;
-    }
-    
-    /* Progress and loading */
-    .stProgress > div > div > div > div {
-        background-color: #2563EB;
-    }
-    
-    /* Layout spacing */
-    .stColumn {
-        gap: 1.5rem;
-    }
-    
-    div[data-testid="column"] {
-        gap: 1.5rem;
-    }
-    
-    /* Form elements spacing */
-    div[data-testid="stVerticalBlock"] > div[style*="flex"] {
-        gap: 1.5rem;
-    }
-    
-    /* Color legend */
-    .color-legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .color-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.75rem;
-        color: #4B5563;
-    }
-    
-    .color-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-    }
-    
-    /* Video player */
-    .stVideo {
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid #E2E8F0;
-    }
-    
-    /* Footer */
-    .footer {
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #E2E8F0;
-        font-size: 0.75rem;
-        color: #6B7280;
-        text-align: left;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .main-header {
-            font-size: 1.5rem;
-        }
-        
-        .section-header {
-            font-size: 1.125rem;
-        }
-        
-        .stTabs [data-baseweb="tab"] {
-            padding: 0.5rem 1rem;
-        }
-    }
-</style>
-""", unsafe_allow_html=True)
+# Load CSS from external file
+def load_css_from_file(file_path="styles.css"):
+    """Load and inject CSS from external file"""
+    try:
+        with open(file_path, 'r') as f:
+            css = f.read()
+        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+    except FileNotFoundError:
+        # Fallback to inline CSS if file not found
+        st.markdown("""
+        <style>
+            .main-header { font-size: 1.75rem; color: #1E3A8A; font-weight: 700; margin-bottom: 0.5rem; }
+            .section-header { font-size: 1.25rem; color: #374151; font-weight: 700; margin-bottom: 0.75rem; }
+        </style>
+        """, unsafe_allow_html=True)
+        st.warning("CSS file 'styles.css' not found. Using minimal styling.")
+
+# Load CSS
+load_css_from_file()
 
 # Title - Top-left aligned
 st.markdown('<h1 class="main-header">YOLOv8 Detection Dashboard</h1>', unsafe_allow_html=True)
 st.markdown("""
-<div style='text-align: left; margin-bottom: 2rem; color: #4B5563; font-weight: 400;'>
+<div style='text-align: left; margin-bottom: 2rem; color: #4B5563; font-weight: 400; line-height: 1.5;'>
     Real-time object detection and tracking using YOLOv8. Upload a video file or use your webcam for detection with advanced object tracking.
 </div>
 """, unsafe_allow_html=True)
@@ -654,8 +376,8 @@ with st.sidebar:
     st.markdown('<div class="section-header">Detection Classes</div>', unsafe_allow_html=True)
     
     with st.container():
-        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
+        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2, gap="small")
         with col1:
             st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
             st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
@@ -682,7 +404,7 @@ with st.sidebar:
     st.markdown('<div class="section-header">Configuration</div>', unsafe_allow_html=True)
     
     with st.container():
-        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
         st.session_state.confidence_threshold = st.slider(
             "Confidence Threshold",
             min_value=0.1,
@@ -695,7 +417,7 @@ with st.sidebar:
     st.markdown('<div class="subsection-header">Performance</div>', unsafe_allow_html=True)
     
     with st.container():
-        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
         st.session_state.frame_skip = st.slider(
             "Frame Skip",
             min_value=1,
@@ -708,7 +430,7 @@ with st.sidebar:
     st.markdown('<div class="subsection-header">Bounding Box</div>', unsafe_allow_html=True)
     
     with st.container():
-        st.markdown('<div style="margin-bottom: 1rem;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
         st.session_state.box_thickness = st.slider(
             "Box Thickness",
             min_value=1,
@@ -1251,7 +973,10 @@ with tab1:
                         
                         st.markdown("## Live Statistics")
                         
-                        # Responsive metrics grid
+                        # Responsive metrics grid using CSS classes
+                        st.markdown('<div class="metrics-container">', unsafe_allow_html=True)
+                        
+                        # Create metrics columns
                         metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
                         with metrics_col1:
                             st.metric("Frames", st.session_state.webcam_frame_count)
@@ -1261,6 +986,8 @@ with tab1:
                             st.metric("Total Detections", st.session_state.webcam_detected_objects)
                         with metrics_col4:
                             st.metric("FPS", f"{fps_value:.1f}")
+                        
+                        st.markdown('</div>', unsafe_allow_html=True)
                          
                         # Show tracking summary
                         display_summary()
@@ -1454,6 +1181,8 @@ with tab2:
                             st.markdown("#### Processing Statistics")
                             
                             # Responsive metrics grid
+                            st.markdown('<div class="metrics-container">', unsafe_allow_html=True)
+                            
                             metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
                             with metrics_col1:
                                 if total_frames > 0:
@@ -1467,6 +1196,8 @@ with tab2:
                                 st.metric("Total Detections", st.session_state.video_detected_objects)
                             with metrics_col4:
                                 st.metric("FPS", f"{fps_value:.1f}")
+                            
+                            st.markdown('</div>', unsafe_allow_html=True)
                             
                             # Show tracking summary
                             display_summary()
@@ -1557,13 +1288,13 @@ st.markdown("---")
 st.markdown("""
 <div class="footer">
     <p>YOLOv8 Detection Dashboard with Advanced Object Tracking | Built with Streamlit, OpenCV, and PyTorch</p>
-    <p style="margin-top: 0.5rem;">
+    <p style="margin-top: 0.5rem; font-size: 0.7rem;">
         Detection Colors: 
         <span style="color: #10B981;">● Persons</span> | 
         <span style="color: #3B82F6;">● Vehicles</span> | 
         <span style="color: #EF4444;">● Animals</span> | 
         <span style="color: #F59E0B;">● Other objects</span> |
-        <span style="background-color: #1F2937; color: white; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.7rem;">ID:XXX</span> Object IDs
+        <span style="background-color: #1F2937; color: white; padding: 2px 6px; border-radius: 3px; font-family: monospace;">ID:XXX</span> Object IDs
     </p>
 </div>
 """, unsafe_allow_html=True)
