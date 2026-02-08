@@ -475,3 +475,92 @@ hr {
     border-color: #FECACA;
     color: #991B1B;
 }
+
+/* Align sidebar header with main title */
+.sidebar .sidebar-content h2 {
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+    color: #1E3A8A !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+/* Reduce spacing in sidebar */
+.sidebar .element-container {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Tighter spacing for checkboxes in sidebar */
+.stCheckbox>div {
+    padding: 0.25rem 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Remove extra spacing from main header */
+.main-header {
+    margin-bottom: 0.25rem !important;
+    padding-top: 0 !important;
+}
+
+/* Cleaner divider lines */
+hr {
+    margin: 1rem 0 !important;
+    opacity: 0.5;
+}
+
+/* Reduce spacing in info cards */
+.info-card {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Tighter footer */
+.footer {
+    margin-top: 1rem !important;
+    padding-top: 1rem !important;
+}
+
+/* Remove extra container padding */
+.st-emotion-cache-1jicfl2 {
+    padding-top: 1rem !important;
+}
+
+.block-container {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+/* Fix container padding to show full title */
+.block-container {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+.st-emotion-cache-1jicfl2 {
+    padding-top: 0.5rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Main header - ensure full visibility */
+.main-header {
+    font-size: 1.75rem !important;
+    color: #1E3A8A !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+    padding-top: 0 !important;
+    text-align: left !important;
+    display: block !important;
+}
+
+/* Streamlit's main container adjustments */
+section.main {
+    padding-top: 0.5rem !important;
+}
+
+/* Ensure sidebar and main content alignment */
+.css-1d391kg {
+    padding-top: 0.5rem !important;
+}
