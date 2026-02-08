@@ -402,7 +402,7 @@ if 'object_tracker' not in st.session_state:
 # Sidebar configuration
 # Sidebar configuration
 with st.sidebar:
-    st.markdown('<h2 style="margin-bottom: 0.75rem;">Settings</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="margin-bottom: 0.75rem;">SETTINGS</h2>', unsafe_allow_html=True)
     
     # Detection classes section
     st.markdown('<div class="section-header" style="margin-top: 0.5rem;">Detection Classes</div>', unsafe_allow_html=True)
@@ -422,7 +422,7 @@ with st.sidebar:
     
     st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels, key="vis_labels")
     st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence, key="vis_confidence")
-    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object", key="vis_ids")
+    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids,key="vis_ids")
     
     st.markdown("---")
     
@@ -439,7 +439,6 @@ with st.sidebar:
         key="conf_threshold"
     )
     
-    st.markdown('<div class="subsection-header">Performance</div>', unsafe_allow_html=True)
     
     st.session_state.frame_skip = st.slider(
         "Frame Skip",
@@ -451,7 +450,6 @@ with st.sidebar:
         key="frame_skip_slider"
     )
     
-    st.markdown('<div class="subsection-header">Bounding Box</div>', unsafe_allow_html=True)
     
     st.session_state.box_thickness = st.slider(
         "Box Thickness",

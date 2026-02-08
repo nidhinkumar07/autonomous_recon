@@ -1,4 +1,4 @@
-/* styles.css - Professional SaaS UI for YOLOv8 Detection Dashboard */
+/* styles.css - Professional SaaS UI for Object Detection & Tracking */
 
 /* Base typography - Clean sans-serif stack */
 html,
@@ -8,31 +8,140 @@ body,
     letter-spacing: -0.011em;
 }
 
-/* Reduce container padding for tighter layout */
+/* Main container adjustments */
 .block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-}
-
-.st-emotion-cache-1jicfl2 {
-    padding-top: 1.5rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 /* Main header positioning */
 .main-header {
-    font-size: 1.75rem;
-    color: #1E3A8A;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    padding-top: 0;
-    text-align: left;
-    letter-spacing: -0.02em;
+    font-size: 1.75rem !important;
+    color: #1E3A8A !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+    padding-top: 0 !important;
+    text-align: left !important;
+    display: block !important;
 }
 
-/* Subheaders with clear hierarchy */
+/* ========== DARK SIDEBAR THEME ========== */
+/* Sidebar container - SOLID DARK BACKGROUND (NO GRADIENT) */
+section[data-testid="stSidebar"] {
+    background-color: #1a1f35 !important;
+    /* Solid color, no gradient */
+    border-right: 1px solid #2a2f45 !important;
+}
+
+/* Sidebar headings - WHITE TEXT */
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] .st-emotion-cache-16txtl3 h2,
+section[data-testid="stSidebar"] .section-header {
+    color: #ffffff !important;
+    /* WHITE TEXT */
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Sidebar ALL TEXT - WHITE */
+section[data-testid="stSidebar"] * {
+    color: #ffffff !important;
+    /* Force white text everywhere in sidebar */
+}
+
+/* Sidebar checkbox labels - WHITE */
+section[data-testid="stSidebar"] .stCheckbox label,
+section[data-testid="stSidebar"] .stCheckbox span {
+    color: #ffffff !important;
+    /* WHITE */
+    font-weight: 500 !important;
+}
+
+/* Sidebar checkboxes - BLUE checked state */
+section[data-testid="stSidebar"] .stCheckbox input:checked+span {
+    background-color: #2563EB !important;
+    /* BLUE */
+    border-color: #2563EB !important;
+}
+
+/* Sidebar checkboxes - Light border for unchecked */
+section[data-testid="stSidebar"] .stCheckbox span {
+    border-color: #4a5069 !important;
+    background-color: transparent !important;
+}
+
+/* Sidebar slider labels - WHITE */
+section[data-testid="stSidebar"] .stSlider label,
+section[data-testid="stSidebar"] .stSlider p {
+    color: #ffffff !important;
+    /* WHITE */
+    font-weight: 500 !important;
+}
+
+/* ========== SLIDER STYLING - WHITE & BLUE ========== */
+/* Slider thumb (circle) - WHITE */
+section[data-testid="stSidebar"] .stSlider div[role="slider"] {
+    background-color: #ffffff !important;
+    /* WHITE thumb */
+    border: 2px solid #2563EB !important;
+    /* BLUE border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Slider filled track - BLUE */
+section[data-testid="stSidebar"] .stSlider div[data-baseweb="slider"]>div:first-child>div {
+    background-color: #2563EB !important;
+    /* BLUE track fill */
+    height: 4px !important;
+    border-radius: 2px !important;
+}
+
+
+
+/* Slider container */
+section[data-testid="stSidebar"] .stSlider {
+    padding: 0.5rem 0 !important;
+}
+
+/* Slider value display */
+section[data-testid="stSidebar"] .stSlider>div>div>div {
+    color: #ffffff !important;
+    /* White value text */
+}
+
+/* ========== REMOVE GRADIENT FROM CARDS ========== */
+/* Remove gradient from info card */
+.info-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    /* Darker border */
+    margin-bottom: 1rem;
+    background-color: #1a1f35 !important;
+    /* Same as sidebar background */
+    border-left: 3px solid #2563EB;
+    /* Blue accent */
+}
+
+/* Remove gradient from processing card */
+.processing-card {
+    background-color: #1a1f35 !important;
+    /* Solid dark background */
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #ffffff !important;
+}
+
+/* Sidebar section headers */
 .section-header {
     font-size: 1.25rem;
-    color: #374151;
+    color: #ffffff !important;
+    /* WHITE for sidebar */
     font-weight: 700;
     margin-top: 0.5rem;
     margin-bottom: 0.75rem;
@@ -41,10 +150,58 @@ body,
 
 .subsection-header {
     font-size: 1rem;
-    color: #4B5563;
+    color: #cbd5e1 !important;
+    /* Light gray for subsection */
     font-weight: 500;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
+}
+
+/* Remove Performance and Bounding Box headers */
+section[data-testid="stSidebar"] .subsection-header {
+    display: none !important;
+    /* Hide subsection headers */
+}
+
+/* Make Detection Colors text visible - WHITE */
+section[data-testid="stSidebar"] .section-header {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+/* Color legend items - ensure text is visible */
+section[data-testid="stSidebar"] .color-item {
+    color: #ffffff !important;
+}
+
+/* Sidebar divider/HR - Lighter color for dark theme */
+section[data-testid="stSidebar"] hr {
+    border-color: #4a5069 !important;
+    opacity: 0.7 !important;
+}
+
+/* Sidebar professional styling - SOLID DARK THEME */
+.sidebar .sidebar-content {
+    padding: 1.5rem 1.25rem;
+    background-color: #1a1f35 !important;
+    /* Solid color, no gradient */
+}
+
+.sidebar .element-container {
+    margin-bottom: 1rem;
+}
+
+/* ========== REGULAR STYLING (Main content) ========== */
+
+/* Subheaders with clear hierarchy - MAIN CONTENT ONLY */
+.main .section-header {
+    color: #374151 !important;
+    /* Gray for main content */
+}
+
+.main .subsection-header {
+    color: #4B5563 !important;
+    /* Darker gray for main content */
 }
 
 /* Card styling system */
@@ -58,49 +215,21 @@ body,
 }
 
 .card-container:hover {
-    border-color: #CBD5E1;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.settings-card {
-    composes: card-container;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.info-card {
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #E2E8F0;
-    margin-bottom: 1rem;
-    background-color: #4b4848;
-    transition: all 0.2s ease;
-    border-left: 3px solid #3B82F6;
-}
-
-.stats-card {
-    composes: card-container;
-    background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
-}
-
-.processing-card {
-    composes: card-container;
-    background-color: #F0F9FF;
-    border-color: #BAE6FD;
-}
-
-.tracking-card {
-    composes: card-container;
-    background-color: #FFFFFF;
-}
-
 /* Tabs - Modern underline system */
+/* ========== TAB STYLING ========== */
+/* Tab container */
 .stTabs [data-baseweb="tab-list"] {
     gap: 0;
     border-bottom: 1px solid #E2E8F0;
     margin-bottom: 1.5rem;
     padding: 0 0.5rem;
+    background-color: transparent;
 }
 
+/* Individual tabs */
 .stTabs [data-baseweb="tab"] {
     padding: 0.75rem 2rem;
     font-weight: 500;
@@ -112,20 +241,43 @@ body,
     border-radius: 6px 6px 0 0;
 }
 
+/* ACTIVE TAB - FORCE BLUE */
 .stTabs [aria-selected="true"] {
     background-color: transparent !important;
-    border-bottom: 2px solid #2563EB;
+    border-bottom: 2px solid #2563EB !important;
+    /* BLUE underline */
     color: #2563EB !important;
+    /* BLUE text */
     font-weight: 600;
 }
 
+/* Hover state for tabs */
 .stTabs [data-baseweb="tab"]:hover {
     background-color: #F1F5F9;
     border-bottom: 2px solid #93C5FD;
+    /* Light blue on hover */
     color: #1E40AF;
 }
 
-/* Button system */
+
+
+.stTabs [aria-selected="true"] {
+    border-bottom-color: #2563EB !important;
+    color: #2563EB !important;
+}
+
+/* Tab container bottom border */
+.stTabs [data-baseweb="tab-list"] {
+    border-bottom: 1px solid #E2E8F0 !important;
+    /* Single line under all tabs */
+}
+
+/* Active tab text color */
+.stTabs [aria-selected="true"]>div>p {
+    color: #2563EB !important;
+}
+
+/* Button system - Make ALL buttons blue */
 .stButton>button {
     width: 100%;
     border-radius: 6px;
@@ -135,70 +287,24 @@ body,
     font-weight: 500;
     transition: all 0.2s ease;
     font-size: 0.875rem;
+    background-color: #2563EB !important;
+    /* Blue color */
+    color: white !important;
 }
 
-.primary-button button {
-    background-color: #2563EB;
-    color: white;
-}
-
-.primary-button button:hover {
-    background-color: #1D4ED8;
+.stButton>button:hover {
+    background-color: #1D4ED8 !important;
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     transform: translateY(-1px);
 }
 
-.secondary-button button {
-    background-color: #6B7280;
-    color: white;
+/* Override for specific button types */
+.stButton button[data-testid="baseButton-secondary"] {
+    background-color: #2563EB !important;
 }
 
-.secondary-button button:hover {
-    background-color: #4B5563;
-    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
-    transform: translateY(-1px);
-}
-
-.stop-button button {
-    background-color: #DC2626 !important;
-    color: white !important;
-}
-
-.stop-button button:hover {
-    background-color: #B91C1C !important;
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
-    transform: translateY(-1px);
-}
-
-/* Sidebar professional styling */
-.sidebar .sidebar-content {
-    padding: 1.5rem 1.25rem;
-    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
-}
-
-.sidebar .element-container {
-    margin-bottom: 1rem;
-}
-
-/* Checkbox and slider spacing */
-.stCheckbox>div {
-    padding: 0.5rem 0;
-    transition: all 0.2s ease;
-}
-
-.stCheckbox label {
-    font-weight: 400;
-    color: #374151;
-}
-
-.stCheckbox>div:hover {
-    background-color: #F8FAFC;
-    border-radius: 4px;
-    padding-left: 0.5rem;
-}
-
-.stSlider>div {
-    padding: 0.75rem 0;
+.stButton button[data-testid="baseButton-secondary"]:hover {
+    background-color: #1D4ED8 !important;
 }
 
 /* Metrics grid - Responsive with flexbox fallback */
@@ -289,7 +395,8 @@ div[data-testid="stVerticalBlock"]>div[style*="flex"] {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.75rem;
-    color: #4B5563;
+    color: #ffffff !important;
+    /* WHITE for dark sidebar */
     font-weight: 400;
 }
 
@@ -309,46 +416,12 @@ div[data-testid="stVerticalBlock"]>div[style*="flex"] {
     background: #000;
 }
 
-/* Form controls */
-.stSelectbox,
-.stTextInput,
-.stNumberInput {
-    margin-bottom: 1rem;
-}
-
-.stSelectbox>div,
-.stTextInput>div,
-.stNumberInput>div {
-    border-radius: 6px;
-    border: 1px solid #E2E8F0;
-}
-
-.stSelectbox>div:hover,
-.stTextInput>div:hover,
-.stNumberInput>div:hover {
-    border-color: #CBD5E1;
-}
-
-/* Footer */
-.footer {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #E2E8F0;
-    font-size: 0.75rem;
-    color: #6B7280;
-    text-align: left;
-}
-
-.footer p {
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-}
-
 /* Divider styling */
 hr {
-    margin: 1.5rem 0;
+    margin: 1rem 0 !important;
     border: none;
     border-top: 1px solid #E2E8F0;
+    opacity: 0.5;
 }
 
 /* Expander styling */
@@ -380,10 +453,6 @@ hr {
 
     .metrics-container {
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    .sidebar .sidebar-content {
-        padding: 1rem;
     }
 }
 
@@ -476,83 +545,11 @@ hr {
     color: #991B1B;
 }
 
-/* Align sidebar header with main title */
-.sidebar .sidebar-content h2 {
-    margin-top: 0 !important;
-    margin-bottom: 1rem !important;
-    color: #1E3A8A !important;
-    font-size: 1.5rem !important;
-    font-weight: 700 !important;
-}
-
-/* Reduce spacing in sidebar */
-.sidebar .element-container {
-    margin-bottom: 0.5rem !important;
-}
-
-/* Tighter spacing for checkboxes in sidebar */
-.stCheckbox>div {
-    padding: 0.25rem 0 !important;
-    margin-bottom: 0 !important;
-}
-
-/* Remove extra spacing from main header */
-.main-header {
-    margin-bottom: 0.25rem !important;
-    padding-top: 0 !important;
-}
-
-/* Cleaner divider lines */
-hr {
-    margin: 1rem 0 !important;
-    opacity: 0.5;
-}
-
-/* Reduce spacing in info cards */
-.info-card {
-    padding: 1rem !important;
-    margin-bottom: 1rem !important;
-}
-
-/* Tighter footer */
-.footer {
-    margin-top: 1rem !important;
-    padding-top: 1rem !important;
-}
-
 /* Remove extra container padding */
 .st-emotion-cache-1jicfl2 {
     padding-top: 1rem !important;
-}
-
-.block-container {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
-}
-
-/* Fix container padding to show full title */
-.block-container {
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-}
-
-.st-emotion-cache-1jicfl2 {
-    padding-top: 0.5rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-/* Main header - ensure full visibility */
-.main-header {
-    font-size: 1.75rem !important;
-    color: #1E3A8A !important;
-    font-weight: 700 !important;
-    margin-bottom: 0.25rem !important;
-    padding-top: 0 !important;
-    text-align: left !important;
-    display: block !important;
 }
 
 /* Streamlit's main container adjustments */
@@ -563,4 +560,14 @@ section.main {
 /* Ensure sidebar and main content alignment */
 .css-1d391kg {
     padding-top: 0.5rem !important;
+}
+
+/* Direct child targeting for tabs */
+div[role="tablist"]>div[role="tab"][aria-selected="true"] {
+    color: #2563EB !important;
+    border-bottom: 2px solid #2563EB !important;
+}
+
+div[role="tablist"]>div[role="tab"][aria-selected="true"]>div>p {
+    color: #2563EB !important;
 }

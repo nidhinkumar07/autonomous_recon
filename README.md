@@ -1,18 +1,18 @@
-# 🔍 YOLOv8 Object Detection
+# YOLOv8 Object Detection
 
 A **production‑ready Streamlit application** for real‑time object detection, tracking, and live counting using **YOLOv8**.
 This project supports **Live Webcam** and **Video Upload** modes with **persistent tracking IDs** and **per‑frame object counts** for all **80 COCO classes**.
 
 ---
 
-## 🚀 Features
+## Features
 
-### ✅ Real‑Time Object Detection
+### Real‑Time Object Detection
 
 - Powered by **YOLOv8 (Ultralytics)**
 - Supports all **80 COCO classes** (person, car, dog, bottle, etc.)
 
-### 🎯 Persistent Object Tracking
+### Persistent Object Tracking
 
 - Unique IDs like:
 
@@ -25,7 +25,7 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 - IDs persist across frames
 - Objects can temporarily disappear and reappear without losing identity
 
-### 🔢 Live Object Counting (Per Frame)
+### Live Object Counting (Per Frame)
 
 - Displays **current active objects only**
 - Example:
@@ -38,18 +38,18 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 
 - Updates instantly when objects enter or leave the frame
 
-### 📹 Dual Input Modes
+### Dual Input Modes
 
 - **Live Webcam Detection**
 - **Upload & Process Video Files**
 
-### 🧠 Smart Matching Logic
+### Smart Matching Logic
 
 - IoU‑based bounding box matching
 - Frame‑gap tolerance for occlusions
 - Prevents duplicate IDs for the same object
 
-### 🎨 Clean Visual Overlay
+### Clean Visual Overlay
 
 - Bounding boxes with class + ID
 - Live object count legend on video feed
@@ -57,7 +57,7 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Python 3.9+**
 - **Streamlit** – UI & dashboard
@@ -67,7 +67,7 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 .
@@ -79,7 +79,7 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### 1️⃣ Clone the Repository
 
@@ -124,7 +124,7 @@ http://localhost:8501
 
 ---
 
-## 🧪 How It Works (High Level)
+## How It Works (High Level)
 
 1. **YOLOv8** detects objects per frame
 2. **ObjectTracker** assigns or matches IDs using IoU
@@ -134,7 +134,7 @@ http://localhost:8501
 
 ---
 
-## 🧩 Object Tracking Logic
+## Object Tracking Logic
 
 - Each detection is matched to an existing object using **IoU**
 - If no match is found → a new ID is created
@@ -143,7 +143,7 @@ http://localhost:8501
 
 ---
 
-## 📊 Output Examples
+## Output Examples
 
 - `3 Persons Detected`
 - `Live Objects Panel`:
@@ -156,7 +156,7 @@ http://localhost:8501
 
 ---
 
-## 🔄 Reset Behavior
+## Reset Behavior
 
 - Tracker resets automatically when:
   - Starting Webcam Detection
@@ -166,7 +166,7 @@ http://localhost:8501
 
 ---
 
-## 🧠 Future Enhancements
+## Future Enhancements
 
 - Zone‑based entry / exit counting
 - Heatmaps & dwell‑time analysis
