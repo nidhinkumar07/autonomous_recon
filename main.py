@@ -302,12 +302,40 @@ class ObjectTracker:
         self.active_counts.clear()
 
 # Set page configuration - MUST BE FIRST STREAMLIT COMMAND
+# Set page configuration - MUST BE FIRST STREAMLIT COMMAND
 st.set_page_config(
     page_title="YOLOv8 Detection Dashboard",
     page_icon="🔍",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
 )
+
+# Add custom CSS for fixing layout
+st.markdown("""
+<style>
+    /* Fix for hidden title */
+    .stApp {
+        margin-top: -1rem;
+    }
+    
+    /* Ensure main content starts at the top */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* Fix for header */
+    h1, .main-header {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Suppress warnings
 import warnings
@@ -333,11 +361,15 @@ def load_css_from_file(file_path="styles.css"):
 # Load CSS
 load_css_from_file()
 
-# Title - Top-left aligned
-st.markdown('<h1 class="main-header">YOLOv8 Detection Dashboard</h1>', unsafe_allow_html=True)
+# Title - Top-left aligned with proper spacing
 st.markdown("""
-<div style='text-align: left; margin-bottom: 2rem; color: #4B5563; font-weight: 400; line-height: 1.5;'>
-    Real-time object detection and tracking using YOLOv8. Upload a video file or use your webcam for detection with advanced object tracking.
+<div style="padding-top: 0; margin-top: 0;">
+    <h1 style="font-size: 1.75rem; color: #1E3A8A; font-weight: 700; margin-bottom: 0.25rem; padding-top: 0;">
+        YOLOv8 Detection Dashboard
+    </h1>
+    <div style='color: #94A3B8; font-weight: 400; line-height: 1.5; margin-bottom: 1.5rem;'>
+        Real-time object detection and tracking using YOLOv8. Upload a video file or use your webcam for detection with advanced object tracking.
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -368,90 +400,94 @@ if 'object_tracker' not in st.session_state:
     st.session_state.object_tracker = ObjectTracker()
 
 # Sidebar configuration
+# Sidebar configuration
 with st.sidebar:
-    st.markdown("## Settings")
-    st.markdown("---")
+    st.markdown('<h2 style="margin-bottom: 0.75rem;">Settings</h2>', unsafe_allow_html=True)
     
     # Detection classes section
-    st.markdown('<div class="section-header">Detection Classes</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header" style="margin-top: 0.5rem;">Detection Classes</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2, gap="small")
-        with col1:
-            st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
-            st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
-        with col2:
-            st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
-            st.session_state.show_everything = st.checkbox("All Classes", value=st.session_state.show_everything, key="sidebar_everything")
+    col1, col2 = st.columns(2, gap="small")
+    with col1:
+        st.session_state.show_persons = st.checkbox("Persons", value=st.session_state.show_persons, key="sidebar_persons")
+        st.session_state.show_vehicles = st.checkbox("Vehicles", value=st.session_state.show_vehicles, key="sidebar_vehicles")
+    with col2:
+        st.session_state.show_animals = st.checkbox("Animals", value=st.session_state.show_animals, key="sidebar_animals")
+        st.session_state.show_everything = st.checkbox("All Classes", value=st.session_state.show_everything, key="sidebar_everything")
     
     st.markdown("---")
     
     # Visualization section
     st.markdown('<div class="section-header">Visualization</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
-        st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels)
-        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
-        st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence)
-        st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
-        st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object")
+    st.session_state.show_labels = st.checkbox("Show Labels", value=st.session_state.show_labels, key="vis_labels")
+    st.session_state.show_confidence = st.checkbox("Show Confidence Scores", value=st.session_state.show_confidence, key="vis_confidence")
+    st.session_state.show_ids = st.checkbox("Show Object IDs", value=st.session_state.show_ids, help="Display unique ID for each tracked object", key="vis_ids")
     
     st.markdown("---")
     
     # Configuration section
     st.markdown('<div class="section-header">Configuration</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
-        st.session_state.confidence_threshold = st.slider(
-            "Confidence Threshold",
-            min_value=0.1,
-            max_value=1.0,
-            value=st.session_state.confidence_threshold,
-            step=0.05,
-            help="Minimum confidence score for detections"
-        )
+    st.session_state.confidence_threshold = st.slider(
+        "Confidence Threshold",
+        min_value=0.1,
+        max_value=1.0,
+        value=st.session_state.confidence_threshold,
+        step=0.05,
+        help="Minimum confidence score for detections",
+        key="conf_threshold"
+    )
     
     st.markdown('<div class="subsection-header">Performance</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
-        st.session_state.frame_skip = st.slider(
-            "Frame Skip",
-            min_value=1,
-            max_value=10,
-            value=st.session_state.frame_skip,
-            step=1,
-            help="Process every nth frame"
-        )
+    st.session_state.frame_skip = st.slider(
+        "Frame Skip",
+        min_value=1,
+        max_value=10,
+        value=st.session_state.frame_skip,
+        step=1,
+        help="Process every nth frame",
+        key="frame_skip_slider"
+    )
     
     st.markdown('<div class="subsection-header">Bounding Box</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div style="margin-bottom: 0.75rem;"></div>', unsafe_allow_html=True)
-        st.session_state.box_thickness = st.slider(
-            "Box Thickness",
-            min_value=1,
-            max_value=5,
-            value=st.session_state.box_thickness,
-            step=1,
-            help="Thickness of detection boxes"
-        )
+    st.session_state.box_thickness = st.slider(
+        "Box Thickness",
+        min_value=1,
+        max_value=5,
+        value=st.session_state.box_thickness,
+        step=1,
+        help="Thickness of detection boxes",
+        key="box_thickness_slider"
+    )
     
     st.markdown("---")
     
     # Color legend
     st.markdown('<div class="section-header">Detection Colors</div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div class="color-legend">', unsafe_allow_html=True)
-        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #10B981;"></div><span>Persons</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #3B82F6;"></div><span>Vehicles</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #EF4444;"></div><span>Animals</span></div>', unsafe_allow_html=True)
-        st.markdown('<div class="color-item"><div class="color-dot" style="background-color: #F59E0B;"></div><span>Other</span></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="margin-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; margin-bottom: 0.25rem;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #10B981; margin-right: 8px;"></div>
+            <span style="font-size: 0.85rem;">Persons</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 0.25rem;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #3B82F6; margin-right: 8px;"></div>
+            <span style="font-size: 0.85rem;">Vehicles</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 0.25rem;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #EF4444; margin-right: 8px;"></div>
+            <span style="font-size: 0.85rem;">Animals</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #F59E0B; margin-right: 8px;"></div>
+            <span style="font-size: 0.85rem;">Other</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Initialize session state for processing
 if 'current_frame' not in st.session_state:
@@ -1018,22 +1054,7 @@ with tab1:
                 st.rerun()
     
     with col2:
-        st.markdown("#### Instructions")
-        st.markdown("""
-        <div class="info-card">
-        <div style="margin-bottom: 0.75rem;"><strong>Steps:</strong></div>
-        <div style="margin-bottom: 0.5rem;">1. Click Start Webcam Detection</div>
-        <div style="margin-bottom: 0.5rem;">2. Allow camera access when prompted</div>
-        <div style="margin-bottom: 0.5rem;">3. Objects are tracked with unique IDs</div>
-        <div style="margin-bottom: 0.5rem;">4. Adjust settings in sidebar</div>
-        <div style="margin-bottom: 1rem;">5. Click Stop Webcam to end</div>
-        
-        <div style="margin-bottom: 0.75rem;"><strong>Tracking Features:</strong></div>
-        <div style="margin-bottom: 0.5rem;">• Uses IoU and center distance for matching</div>
-        <div style="margin-bottom: 0.5rem;">• Objects can be missing for 5 frames</div>
-        <div>• Prevents duplicate IDs for same object</div>
-        </div>
-        """, unsafe_allow_html=True)
+        pass
 
 # Tab 2: Upload Video
 with tab2:
@@ -1259,23 +1280,16 @@ with tab2:
                 except:
                     st.warning("Could not read video properties")
                 
-                st.markdown("#### Processing Instructions")
                 st.markdown("""
-                <div class="info-card">
-                <div style="margin-bottom: 0.75rem;"><strong>Steps:</strong></div>
-                <div style="margin-bottom: 0.5rem;">1. Video uploaded successfully</div>
-                <div style="margin-bottom: 0.5rem;">2. Click Start Video Processing</div>
-                <div style="margin-bottom: 0.5rem;">3. Objects are tracked with unique IDs</div>
-                <div style="margin-bottom: 0.5rem;">4. View real-time results with comprehensive tracking</div>
-                <div style="margin-bottom: 1rem;">5. Click Stop Processing to pause</div>
-                
-                <div style="margin-bottom: 0.75rem;"><strong>Tracking Features:</strong></div>
-                <div style="margin-bottom: 0.5rem;">• Uses IoU (0.4 threshold) and center distance</div>
-                <div style="margin-bottom: 0.5rem;">• Objects can disappear for 5 frames</div>
-                <div style="margin-bottom: 0.5rem;">• Prevents duplicate IDs for same object</div>
-                <div>• Sorts detections by confidence for better matching</div>
-                </div>
-                """, unsafe_allow_html=True)
+                    <div class="info-card">
+                        <strong style="color: #94A3B8;">Steps:</strong><br>
+                        <span style="color: #94A3B8;">1. Video uploaded successfully</span><br>
+                        <span style="color: #94A3B8;">2. Click Start Video Processing</span><br>
+                        <span style="color: #94A3B8;">3. Objects are tracked with unique IDs</span><br>
+                        <span style="color: #94A3B8;">4. View real-time results</span><br>
+                        <span style="color: #94A3B8;">5. Click Stop Processing to pause</span>
+                    </div>
+                    """, unsafe_allow_html=True)
             # When processing, the right column will show the statistics from video_stats_placeholder
     else:
         # Clear video path if no file is uploaded
@@ -1284,17 +1298,3 @@ with tab2:
         st.info("Please upload a video file to start detection.")
 
 # Footer
-st.markdown("---")
-st.markdown("""
-<div class="footer">
-    <p>YOLOv8 Detection Dashboard with Advanced Object Tracking | Built with Streamlit, OpenCV, and PyTorch</p>
-    <p style="margin-top: 0.5rem; font-size: 0.7rem;">
-        Detection Colors: 
-        <span style="color: #10B981;">● Persons</span> | 
-        <span style="color: #3B82F6;">● Vehicles</span> | 
-        <span style="color: #EF4444;">● Animals</span> | 
-        <span style="color: #F59E0B;">● Other objects</span> |
-        <span style="background-color: #1F2937; color: white; padding: 2px 6px; border-radius: 3px; font-family: monospace;">ID:XXX</span> Object IDs
-    </p>
-</div>
-""", unsafe_allow_html=True)
