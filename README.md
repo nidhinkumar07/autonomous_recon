@@ -67,14 +67,45 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 
 ---
 
+## Visual Overlay
+
+```
+🟢 Green   → Persons
+🔵 Blue    → Vehicles (car, truck, bus)
+🔴 Red     → Animals (dog, cat, bird)
+🟡 Yellow  → Others (bottle, chair, book)
+
+Overlay includes:
+┌─────────────────────────────────┐
+│  [person-001] 0.92  🎯 FPS: 24  │
+│  ┌─────────────┐                │
+│  │             │  Frame: 124    │
+│  │  DETECTION  │  Live: 6 obj   │
+│  │             │                │
+│  └─────────────┘                │
+└─────────────────────────────────┘
+```
+
 ## Project Structure
 
 ```bash
-.
-├── main.py              # Streamlit app (detection + tracking + UI)
-├── README.md            # Project documentation
-├── requirements.txt     # Python dependencies
-└── yolov8n.pt           # YOLOv8 model (auto‑downloaded if missing)
+autonomous_recon/
+│
+├── 📄 main.py                 # Streamlit entry point (UI + detection pipeline)
+├── 📄 requirements.txt       # Python dependencies
+├── 🎨 styles.css            # Custom SaaS styling
+│
+├── 📂 core/
+│   ├── 📄 detector.py       # YOLOv8 detection logic
+│   └── 📄 tracker.py        # Persistent object tracking algorithms
+│
+├── 📂 ui/
+│   ├── 📄 draw_utils.py     # Bounding box & overlay rendering
+│   └── 📄 components.py     # Sidebar + reusable UI components
+│
+└── 📂 config/
+    └── 📄 classes.py        # COCO class definitions + color mapping
+
 ```
 
 ---
@@ -84,16 +115,28 @@ This project supports **Live Webcam** and **Video Upload** modes with **persiste
 ### 1️⃣ Clone the Repository
 
 ```bash
+# HTTPS
 git clone https://github.com/nidhinkumar07/autonomous_recon.git
+
+# SSH
+git clone git@github.com:nidhinkumar07/autonomous_recon.git
+
 cd autonomous_recon
 ```
 
 ### 2️⃣ Create Virtual Environment (Recommended)
 
 ```bash
+# Windows (CMD/PowerShell)
 python -m venv venv
-source venv/bin/activate   # Linux / Mac
-venv\Scripts\activate      # Windows
+venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+
+# (Optional) Upgrade pip
+python -m pip install --upgrade pip
 ```
 
 ### 3️⃣ Install Dependencies
@@ -102,18 +145,12 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-If you don’t have a `requirements.txt`, use:
-
-```bash
-pip install streamlit opencv-python ultralytics numpy pillow
-```
-
 ---
 
 ## ▶️ Run the Application
 
 ```bash
-streamlit run main.py
+streamlit run app.py
 ```
 
 Then open your browser at:
