@@ -881,7 +881,8 @@ with tab1:
             # Control button
             if st.button("Stop Webcam", key="stop_webcam_btn", type="secondary"):
                 st.session_state.webcam_active = False
-                st.rerun()
+                webcam_placeholder.empty()
+                
             
             # Webcam processing logic
             try:
@@ -1063,6 +1064,7 @@ with tab2:
                 # Control button
                 if st.button("Stop Processing", key="stop_video_btn", type="secondary"):
                     st.session_state.video_processing = False
+                    video_placeholder.empty()
                     st.rerun()
                 
                 # Video processing logic
