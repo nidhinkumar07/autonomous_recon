@@ -12,7 +12,7 @@ body,
 /* Main container adjustments */
 /* Main container adjustments */
 .block-container {
-    padding-top: 0.5rem !important;
+    padding-top: 4rem !important;
     padding-bottom: 0.5rem !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
@@ -572,4 +572,31 @@ div[role="tablist"]>div[role="tab"][aria-selected="true"] {
 
 div[role="tablist"]>div[role="tab"][aria-selected="true"]>div>p {
     color: #2563EB !important;
+}
+
+/* Remove default red tab indicator */
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: #2563EB !important;
+    /* Blue */
+}
+
+/* Force active tab underline to blue */
+.stTabs [aria-selected="true"] {
+    border-bottom: 2px solid #2563EB !important;
+}
+
+/* Remove the grey line under tab navigation */
+.stTabs [data-baseweb="tab-border"] {
+    display: none !important;
+}
+
+/* Remove top border of tab content panel */
+.stTabs div[role="tabpanel"] {
+    border-top: none !important;
+    padding-top: 0 !important;
+}
+
+/* Remove extra separator container */
+div[data-testid="stTabs"]>div:nth-child(2) {
+    border-top: none !important;
 }
