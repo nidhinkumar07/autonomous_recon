@@ -211,38 +211,26 @@ class ObjectTracker:
         return return_data
     
     def cleanup_old_objects(self, current_frame):
-        """Remove objects that have been missing for too many frames"""
-        objects_to_remove = []
-        
+        """
+        Mark objects inactive if missing for too many frames.
+        DO NOT delete history.
+        """
+
+        # Reset active counts
+        self.active_counts.clear()
+
         for obj_id, obj_data in self.object_data.items():
             missing_frames = obj_data.get('missing_frames', 0)
-            
-            # If object hasn't been seen for max_frames_missing frames, remove it
+
+            # Determine active state
             if missing_frames > self.max_frames_missing:
-                objects_to_remove.append(obj_id)
-        
-        # Remove objects
-        for obj_id in objects_to_remove:
-            class_name = self.object_data[obj_id]['class']
-            
-            # Remove from object_instances
-            if obj_id in self.object_instances[class_name]:
-                self.object_instances[class_name].remove(obj_id)
-            
-            # Remove from object_data
-            del self.object_data[obj_id]
-            
-            # Remove from active_objects if present
-            if obj_id in self.active_objects:
-                del self.active_objects[obj_id]
-            
-            # Remove from active_counts if present
-            if class_name in self.active_counts:
-                # Recalculate active counts for this class
-                self.active_counts[class_name] = sum(
-                    1 for obj_id, obj_data in self.object_data.items() 
-                    if obj_data.get('class') == class_name and obj_data.get('missing_frames', 0) == 0
-                )
+                obj_data['is_active'] = False
+            else:
+                obj_data['is_active'] = True
+                class_name = obj_data.get('class')
+                self.active_counts[class_name] += 1
+
+
     
     def get_current_counts(self):
         """Get current counts per class for active objects"""
@@ -277,7 +265,8 @@ class ObjectTracker:
                     "first_frame": obj_data.get('first_frame', 0),
                     "last_frame": obj_data.get('last_frame', 0),
                     "avg_confidence": np.mean(obj_data.get('confidence_history', [])) if obj_data.get('confidence_history') else 0,
-                    "is_active": obj_data.get('missing_frames', 0) == 0
+                    "is_active": obj_data.get('is_active', False)
+
                 })
             
             summary["objects"][class_name] = class_objects
@@ -809,7 +798,7 @@ def display_summary():
     
     # Overall statistics
     total_objects = summary["statistics"]["total_objects"]
-    st.markdown(f'<div class="stats-card"><strong>Total Unique Objects Tracked:</strong> {total_objects}</div>', unsafe_allow_html=True)
+    
     
     # Display by category
     for class_name, objects in summary["objects"].items():
