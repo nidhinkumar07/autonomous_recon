@@ -315,28 +315,6 @@ st.set_page_config(
     }
 )
 
-# Add custom CSS for fixing layout
-st.markdown("""
-<style>
-    /* Fix for hidden title */
-    .stApp {
-        margin-top: -1rem;
-    }
-    
-    /* Ensure main content starts at the top */
-    .main .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-    
-    /* Fix for header */
-    h1, .main-header {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Suppress warnings
 import warnings
 warnings.filterwarnings('ignore')
@@ -350,12 +328,10 @@ def load_css_from_file(file_path="styles.css"):
         st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     except FileNotFoundError:
         # Fallback to inline CSS if file not found
-        st.markdown("""
-        <style>
-            .main-header { font-size: 1.75rem; color: #1E3A8A; font-weight: 700; margin-bottom: 0.5rem; }
-            .section-header { font-size: 1.25rem; color: #374151; font-weight: 700; margin-bottom: 0.75rem; }
-        </style>
-        """, unsafe_allow_html=True)
+        
+        st.title("YOLOv8 Detection Dashboard")
+        st.caption("Real-time object detection and tracking using YOLOv8. Upload a video file or use your webcam for detection with advanced object tracking.")
+
         st.warning("CSS file 'styles.css' not found. Using minimal styling.")
 
 # Load CSS
