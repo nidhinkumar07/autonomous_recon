@@ -1,602 +1,411 @@
-/* styles.css - Professional SaaS UI for Object Detection & Tracking */
-
-/* Base typography - Clean sans-serif stack */
-html,
-body,
-[class*="css"] {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-    letter-spacing: -0.011em;
+/* ===== GLOBAL RESET & BASE ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-
-/* Main container adjustments */
-/* Main container adjustments */
-.block-container {
-    padding-top: 4rem !important;
-    padding-bottom: 0.5rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+/* ===== MAIN APP ===== */
+.stApp {
+    background-color: #0F172A;
+    color: #E2E8F0;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Main header positioning */
-.main-header {
-    font-size: 1.75rem !important;
-    color: #1E3A8A !important;
-    font-weight: 700 !important;
-    margin-bottom: 0.25rem !important;
-    padding-top: 0 !important;
-    text-align: left !important;
-    display: block !important;
-}
-
-/* ========== DARK SIDEBAR THEME ========== */
-/* Sidebar container - SOLID DARK BACKGROUND (NO GRADIENT) */
-section[data-testid="stSidebar"] {
-    background-color: #1a1f35 !important;
-    /* Solid color, no gradient */
-    border-right: 1px solid #2a2f45 !important;
-}
-
-/* Sidebar headings - WHITE TEXT */
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3,
-section[data-testid="stSidebar"] .st-emotion-cache-16txtl3 h2,
-section[data-testid="stSidebar"] .section-header {
-    color: #ffffff !important;
-    /* WHITE TEXT */
-    font-weight: 700 !important;
-    margin-top: 0 !important;
-    margin-bottom: 1rem !important;
-}
-
-/* Sidebar ALL TEXT - WHITE */
-section[data-testid="stSidebar"] * {
-    color: #ffffff !important;
-    /* Force white text everywhere in sidebar */
-}
-
-/* Sidebar checkbox labels - WHITE */
-section[data-testid="stSidebar"] .stCheckbox label,
-section[data-testid="stSidebar"] .stCheckbox span {
-    color: #ffffff !important;
-    /* WHITE */
-    font-weight: 500 !important;
-}
-
-/* Sidebar checkboxes - BLUE checked state */
-section[data-testid="stSidebar"] .stCheckbox input:checked+span {
-    background-color: #2563EB !important;
-    /* BLUE */
-    border-color: #2563EB !important;
-}
-
-/* Sidebar checkboxes - Light border for unchecked */
-section[data-testid="stSidebar"] .stCheckbox span {
-    border-color: #4a5069 !important;
-    background-color: transparent !important;
-}
-
-/* Sidebar slider labels - WHITE */
-section[data-testid="stSidebar"] .stSlider label,
-section[data-testid="stSidebar"] .stSlider p {
-    color: #ffffff !important;
-    /* WHITE */
-    font-weight: 500 !important;
-}
-
-/* ========== SLIDER STYLING - WHITE & BLUE ========== */
-/* Slider thumb (circle) - WHITE */
-section[data-testid="stSidebar"] .stSlider div[role="slider"] {
-    background-color: #ffffff !important;
-    /* WHITE thumb */
-    border: 2px solid #2563EB !important;
-    /* BLUE border */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Slider filled track - BLUE */
-section[data-testid="stSidebar"] .stSlider div[data-baseweb="slider"]>div:first-child>div {
-    background-color: #2563EB !important;
-    /* BLUE track fill */
-    height: 4px !important;
-    border-radius: 2px !important;
-}
-
-
-
-/* Slider container */
-section[data-testid="stSidebar"] .stSlider {
-    padding: 0.5rem 0 !important;
-}
-
-/* Slider value display */
-section[data-testid="stSidebar"] .stSlider>div>div>div {
-    color: #ffffff !important;
-    /* White value text */
-}
-
-/* ========== REMOVE GRADIENT FROM CARDS ========== */
-/* Remove gradient from info card */
-.info-card {
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #374151;
-    /* Darker border */
-    margin-bottom: 1rem;
-    background-color: #1a1f35 !important;
-    /* Same as sidebar background */
-    border-left: 3px solid #2563EB;
-    /* Blue accent */
-}
-
-/* Remove gradient from processing card */
-.processing-card {
-    background-color: #1a1f35 !important;
-    /* Solid dark background */
-    border: 1px solid #374151;
-    border-radius: 8px;
+/* ===== SIDEBAR ===== */
+[data-testid="stSidebar"] {
+    background-color: #1E293B;
+    border-right: 1px solid #334155;
     padding: 1rem;
-    color: #ffffff !important;
 }
 
-/* Sidebar section headers */
-.section-header {
-    font-size: 1.25rem;
-    color: #ffffff !important;
-    /* WHITE for sidebar */
+[data-testid="stSidebar"] h2 {
+    color: #F1F5F9;
+    font-size: 0.85rem;
     font-weight: 700;
-    margin-top: 0.5rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     margin-bottom: 0.75rem;
-    letter-spacing: -0.015em;
 }
 
-.subsection-header {
-    font-size: 1rem;
-    color: #cbd5e1 !important;
-    /* Light gray for subsection */
-    font-weight: 500;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-/* Remove Performance and Bounding Box headers */
-section[data-testid="stSidebar"] .subsection-header {
-    display: none !important;
-    /* Hide subsection headers */
-}
-
-/* Make Detection Colors text visible - WHITE */
-section[data-testid="stSidebar"] .section-header {
-    color: #ffffff !important;
-    opacity: 1 !important;
-}
-
-/* Color legend items - ensure text is visible */
-section[data-testid="stSidebar"] .color-item {
-    color: #ffffff !important;
-}
-
-/* Sidebar divider/HR - Lighter color for dark theme */
-section[data-testid="stSidebar"] hr {
-    border-color: #4a5069 !important;
-    opacity: 0.7 !important;
-}
-
-/* Sidebar professional styling - SOLID DARK THEME */
-.sidebar .sidebar-content {
-    padding: 1.5rem 1.25rem;
-    background-color: #1a1f35 !important;
-    /* Solid color, no gradient */
-}
-
-.sidebar .element-container {
-    margin-bottom: 1rem;
-}
-
-/* ========== REGULAR STYLING (Main content) ========== */
-
-/* Subheaders with clear hierarchy - MAIN CONTENT ONLY */
-.main .section-header {
-    color: #374151 !important;
-    /* Gray for main content */
-}
-
-.main .subsection-header {
-    color: #4B5563 !important;
-    /* Darker gray for main content */
-}
-
-/* Card styling system */
-.card-container {
-    padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid #E2E8F0;
-    margin-bottom: 1rem;
-    background-color: #FFFFFF;
-    transition: all 0.2s ease;
-}
-
-.card-container:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-/* Tabs - Modern underline system */
-/* ========== TAB STYLING ========== */
-/* Tab container */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 0;
-    border-bottom: 1px solid #E2E8F0;
-    margin-bottom: 1.5rem;
-    padding: 0 0.5rem;
-    background-color: transparent;
-}
-
-/* Individual tabs */
-.stTabs [data-baseweb="tab"] {
-    padding: 0.75rem 2rem;
-    font-weight: 500;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
-    margin-right: 0.5rem;
-    color: #64748B;
-    background: none;
-    border-radius: 6px 6px 0 0;
-}
-
-/* ACTIVE TAB - FORCE BLUE */
-.stTabs [aria-selected="true"] {
-    background-color: transparent !important;
-    border-bottom: 2px solid #2563EB !important;
-    /* BLUE underline */
-    color: #2563EB !important;
-    /* BLUE text */
-    font-weight: 600;
-}
-
-/* Hover state for tabs */
-.stTabs [data-baseweb="tab"]:hover {
-    background-color: #F1F5F9;
-    border-bottom: 2px solid #93C5FD;
-    /* Light blue on hover */
-    color: #1E40AF;
-}
-
-
-
-.stTabs [aria-selected="true"] {
-    border-bottom-color: #2563EB !important;
-    color: #2563EB !important;
-}
-
-/* Tab container bottom border */
-.stTabs [data-baseweb="tab-list"] {
-    border-bottom: 1px solid #E2E8F0 !important;
-    /* Single line under all tabs */
-}
-
-/* Active tab text color */
-.stTabs [aria-selected="true"]>div>p {
-    color: #2563EB !important;
-}
-
-/* Button system - Make ALL buttons blue */
-.stButton>button {
-    width: 100%;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    margin: 0.25rem 0;
-    border: none;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-    background-color: #2563EB !important;
-    /* Blue color */
-    color: white !important;
-}
-
-.stButton>button:hover {
-    background-color: #1D4ED8 !important;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-    transform: translateY(-1px);
-}
-
-/* Override for specific button types */
-.stButton button[data-testid="baseButton-secondary"] {
-    background-color: #2563EB !important;
-}
-
-.stButton button[data-testid="baseButton-secondary"]:hover {
-    background-color: #1D4ED8 !important;
-}
-
-/* Metrics grid - Responsive with flexbox fallback */
-.metrics-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.metric-item {
-    text-align: center;
-    padding: 1rem;
-    background-color: #F8FAFC;
-    border-radius: 8px;
-    border: 1px solid #E2E8F0;
-    transition: all 0.2s ease;
-}
-
-.metric-item:hover {
-    border-color: #CBD5E1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Status indicators */
-.status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
+/* ===== SECTION HEADERS ===== */
+.section-header {
     font-size: 0.75rem;
     font-weight: 600;
-    margin-right: 0.5rem;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     margin-bottom: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* ===== TABS ===== */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    background-color: transparent;
+    border-bottom: 2px solid #1E293B;
+    gap: 0;
+}
+
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    background-color: transparent;
+    color: #64748B;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.6rem 1.25rem;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+[data-testid="stTabs"] [aria-selected="true"] {
+    color: #3B82F6 !important;
+    border-bottom: 2px solid #3B82F6 !important;
+    background-color: transparent !important;
+}
+
+[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+    color: #CBD5E1;
+}
+
+/* ===== METRICS ===== */
+[data-testid="stMetric"] {
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #94A3B8 !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-.status-person {
-    background-color: #10B981;
-    color: white;
+[data-testid="stMetricValue"] {
+    color: #F1F5F9 !important;
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
 }
 
-.status-vehicle {
-    background-color: #3B82F6;
-    color: white;
+[data-testid="stMetricDelta"] {
+    font-size: 0.78rem !important;
 }
 
-.status-animal {
-    background-color: #EF4444;
-    color: white;
-}
-
-.status-other {
-    background-color: #F59E0B;
-    color: white;
-}
-
-/* Progress bar */
-.stProgress>div>div>div>div {
-    background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
-    border-radius: 9999px;
-}
-
-/* Layout spacing */
-.stColumn {
-    gap: 1.5rem;
-}
-
-div[data-testid="column"] {
-    gap: 1.5rem;
-}
-
-div[data-testid="stVerticalBlock"]>div[style*="flex"] {
-    gap: 1.5rem;
-}
-
-/* Color legend */
-.color-legend {
+.metrics-container {
     display: flex;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.5rem;
     margin-bottom: 1rem;
 }
 
-.color-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    color: #ffffff !important;
-    /* WHITE for dark sidebar */
-    font-weight: 400;
+/* ===== BUTTONS ===== */
+.stButton>button[kind="primary"] {
+    background-color: #3B82F6;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.5rem 1.25rem;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
-.color-dot {
+.stButton>button[kind="primary"]:hover {
+    background-color: #2563EB;
+    transform: translateY(-1px);
+}
+
+.stButton>button[kind="primary"]:active {
+    transform: translateY(0);
+}
+
+.stButton>button[kind="secondary"] {
+    background-color: transparent;
+    color: #94A3B8;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 1.25rem;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.stButton>button[kind="secondary"]:hover {
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+/* ===== CHECKBOXES ===== */
+[data-testid="stCheckbox"] label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+}
+
+/* ===== SELECTBOX ===== */
+[data-testid="stSelectbox"] label {
+    color: #94A3B8;
+    font-size: 0.8rem;
+}
+
+[data-testid="stSelectbox"]>div>div {
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    color: #E2E8F0;
+    border-radius: 6px;
+}
+
+/* ===== SLIDERS ===== */
+[data-testid="stSlider"] label {
+    color: #94A3B8;
+    font-size: 0.8rem;
+}
+
+[data-testid="stSlider"] [data-baseweb="slider"] [role="slider"] {
+    background-color: #3B82F6;
+}
+
+/* ===== FILE UPLOADER ===== */
+[data-testid="stFileUploader"] {
+    background-color: #1E293B;
+    border: 2px dashed #334155;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: border-color 0.2s;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: #3B82F6;
+}
+
+/* ===== DOWNLOAD BUTTONS ===== */
+[data-testid="stDownloadButton"]>button {
+    background-color: #1E293B;
+    color: #94A3B8;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    padding: 0.4rem 1rem;
+    width: 100%;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+[data-testid="stDownloadButton"]>button:hover {
+    border-color: #3B82F6;
+    color: #3B82F6;
+}
+
+/* ===== PULSE ANIMATION for active processing card (fix #19) ===== */
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-dot {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-dot {
+    display: inline-block;
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: #10B981;
+    margin-right: 8px;
+    vertical-align: middle;
+    animation: pulse-dot 1.4s ease-in-out infinite;
+    position: relative;
 }
 
-/* Video player */
-.stVideo {
+.pulse-dot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #10B981;
+    animation: pulse-ring 1.4s ease-out infinite;
+}
+
+/* ===== PROCESSING CARD ===== */
+.processing-card {
+    background-color: #1E3A5F;
+    border: 1px solid #3B82F6;
+    border-left: 4px solid #3B82F6;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    color: #93C5FD;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* ===== INFO CARD ===== */
+.info-card {
+    background-color: #1E293B;
+    border: 1px solid #334155;
     border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #E2E8F0;
-    background: #000;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.8;
+    margin-top: 1rem;
 }
 
-/* Divider styling */
+/* ===== EXPANDER ===== */
+[data-testid="stExpander"] {
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 6px;
+}
+
+[data-testid="stExpander"] summary {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+}
+
+/* ===== ALERTS ===== */
+[data-testid="stAlert"] {
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+/* ===== DIVIDER ===== */
 hr {
-    margin: 1rem 0 !important;
-    border: none;
-    border-top: 1px solid #E2E8F0;
-    opacity: 0.5;
+    border-color: #1E293B;
+    margin: 0.75rem 0;
 }
 
-/* Expander styling */
-.streamlit-expanderHeader {
+/* ===== IMAGES ===== */
+[data-testid="stImage"] img {
+    border-radius: 8px;
+    border: 1px solid #334155;
+    width: 100%;
+}
+
+/* ===== PROGRESS BAR ===== */
+[data-testid="stProgressBar"]>div>div {
+    background: linear-gradient(90deg, #3B82F6, #10B981);
+    border-radius: 4px;
+}
+
+/* ===== HEADINGS (fix #23 — consistent with dark theme) ===== */
+h1,
+h2,
+h3,
+h4 {
+    color: #F1F5F9;
+}
+
+h2 {
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #E2E8F0;
-    padding: 0.75rem 0;
+    margin-bottom: 1rem;
 }
 
-.streamlit-expanderContent {
-    padding: 1rem 0;
+h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
 }
 
-/* Responsive adjustments */
+h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* ===== SPINNER ===== */
+[data-testid="stSpinner"] {
+    color: #3B82F6;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0F172A;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* ===== RESPONSIVE — fix #22 ===== */
 @media (max-width: 768px) {
-    .main-header {
-        font-size: 1.5rem;
+    [data-testid="stMetricValue"] {
+        font-size: 1.1rem !important;
     }
 
-    .section-header {
-        font-size: 1.125rem;
+    [data-testid="stMetric"] {
+        padding: 0.5rem 0.75rem;
     }
 
-    .stTabs [data-baseweb="tab"] {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+    .stButton>button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
     }
 
-    .metrics-container {
-        grid-template-columns: repeat(2, 1fr);
+    [data-testid="stTabs"] [data-baseweb="tab"] {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .info-card {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .processing-card {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.85rem;
     }
 }
 
 @media (max-width: 480px) {
-    .metrics-container {
-        grid-template-columns: 1fr;
+    h1 {
+        font-size: 1.3rem !important;
     }
 
-    .color-legend {
-        justify-content: center;
+    h2 {
+        font-size: 1.05rem;
     }
 
-    .card-container {
-        padding: 1rem;
-    }
-}
-
-/* Animation for loading states */
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
+    [data-testid="stMetric"] {
+        padding: 0.4rem 0.5rem;
     }
 
-    50% {
-        opacity: 0.5;
+    [data-testid="stMetricValue"] {
+        font-size: 0.95rem !important;
     }
-}
-
-.loading-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #F1F5F9;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
-}
-
-/* Tooltip styling */
-[data-testid="stTooltip"] {
-    font-size: 0.75rem;
-    border-radius: 6px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-/* Alert and info boxes */
-.stAlert {
-    border-radius: 8px;
-    border: 1px solid;
-    margin-bottom: 1rem;
-}
-
-.stAlert.info {
-    background-color: #EFF6FF;
-    border-color: #BFDBFE;
-    color: #1E40AF;
-}
-
-.stAlert.success {
-    background-color: #D1FAE5;
-    border-color: #A7F3D0;
-    color: #065F46;
-}
-
-.stAlert.warning {
-    background-color: #FEF3C7;
-    border-color: #FDE68A;
-    color: #92400E;
-}
-
-.stAlert.error {
-    background-color: #FEE2E2;
-    border-color: #FECACA;
-    color: #991B1B;
-}
-
-/* Remove extra container padding */
-.st-emotion-cache-1jicfl2 {
-    padding-top: 1rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-/* Streamlit's main container adjustments */
-section.main {
-    padding-top: 0.5rem !important;
-}
-
-/* Ensure sidebar and main content alignment */
-.css-1d391kg {
-    padding-top: 0.5rem !important;
-}
-
-/* Direct child targeting for tabs */
-div[role="tablist"]>div[role="tab"][aria-selected="true"] {
-    color: #2563EB !important;
-    border-bottom: 2px solid #2563EB !important;
-}
-
-div[role="tablist"]>div[role="tab"][aria-selected="true"]>div>p {
-    color: #2563EB !important;
-}
-
-/* Remove default red tab indicator */
-.stTabs [data-baseweb="tab-highlight"] {
-    background-color: #2563EB !important;
-    /* Blue */
-}
-
-/* Force active tab underline to blue */
-.stTabs [aria-selected="true"] {
-    border-bottom: 2px solid #2563EB !important;
-}
-
-/* Remove the grey line under tab navigation */
-.stTabs [data-baseweb="tab-border"] {
-    display: none !important;
-}
-
-/* Remove top border of tab content panel */
-.stTabs div[role="tabpanel"] {
-    border-top: none !important;
-    padding-top: 0 !important;
-}
-
-/* Remove extra separator container */
-div[data-testid="stTabs"]>div:nth-child(2) {
-    border-top: none !important;
 }

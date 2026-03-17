@@ -1,214 +1,169 @@
-# YOLOv8 Object Detection
+# 🔍 YOLOv8 Detection Dashboard
 
-A **production‑ready Streamlit application** for real‑time object detection, tracking, and live counting using **YOLOv8**.
-This project supports **Live Webcam** and **Video Upload** modes with **persistent tracking IDs** and **per‑frame object counts** for all **80 COCO classes**.
-
----
-
-## Features
-
-### Real‑Time Object Detection
-
-- Powered by **YOLOv8 (Ultralytics)**
-- Supports all **80 COCO classes** (person, car, dog, bottle, etc.)
-
-### Persistent Object Tracking
-
-- Unique IDs like:
-
-  ```
-  person-001
-  car-002
-  dog-001
-  ```
-
-- IDs persist across frames
-- Objects can temporarily disappear and reappear without losing identity
-
-### Live Object Counting (Per Frame)
-
-- Displays **current active objects only**
-- Example:
-
-  ```
-  Person : 3
-  Car    : 1
-  Dog    : 2
-  ```
-
-- Updates instantly when objects enter or leave the frame
-
-### Dual Input Modes
-
-- **Live Webcam Detection**
-- **Upload & Process Video Files**
-
-### Smart Matching Logic
-
-- IoU‑based bounding box matching
-- Frame‑gap tolerance for occlusions
-- Prevents duplicate IDs for the same object
-
-### Clean Visual Overlay
-
-- Bounding boxes with class + ID
-- Live object count legend on video feed
-- Color‑coded objects (persons, vehicles, animals, others)
+A professional, real-time object detection and tracking web application built with **Streamlit** and **YOLOv8**. Supports live webcam feeds and uploaded video files, with persistent multi-object tracking, class filtering, and live statistics.
 
 ---
 
-## Tech Stack
+## 📸 Features
 
-- **Python 3.9+**
-- **Streamlit** – UI & dashboard
-- **OpenCV** – Video processing
-- **YOLOv8 (Ultralytics)** – Object detection
-- **NumPy** – Math & geometry
+- 🎥 **Live Webcam Detection** — Real-time object detection from your webcam
+- 📹 **Video File Upload** — Process uploaded video files (MP4, AVI, MOV, MKV, and more)
+- 🏷️ **Multi-Object Tracking** — Each detected object gets a unique persistent ID across frames
+- 📊 **Live Statistics** — Real-time FPS, detection count, and per-class tracking summaries
+- 🎛️ **Sidebar Controls** — Filter by class (Persons, Vehicles, Animals, All), adjust confidence threshold, frame skip, and box thickness
+- 🎨 **Color-coded Bounding Boxes** — Green for persons, blue for vehicles, red for animals, yellow for others
+- 🖼️ **On-frame Overlay** — Live count overlay rendered directly onto each video frame
+- 💅 **Custom CSS Styling** — External `styles.css` for a clean professional SaaS look
 
 ---
 
-## Visual Overlay
+## 📁 Project Structure
 
 ```
-🟢 Green   → Persons
-🔵 Blue    → Vehicles (car, truck, bus)
-🔴 Red     → Animals (dog, cat, bird)
-🟡 Yellow  → Others (bottle, chair, book)
-
-Overlay includes:
-┌─────────────────────────────────┐
-│  [person-001] 0.92  🎯 FPS: 24  │
-│  ┌─────────────┐                │
-│  │             │  Frame: 124    │
-│  │  DETECTION  │  Live: 6 obj   │
-│  │             │                │
-│  └─────────────┘                │
-└─────────────────────────────────┘
+├── main.py              # Entry point — page config, title, wires all modules
+├── tracker.py           # ObjectTracker class + COCO_CLASSES list
+├── detection.py         # YOLO model loading, inference, filtering, drawing
+├── ui_components.py     # CSS loader and tracking summary display
+├── session_state.py     # All Streamlit session state initialization
+├── sidebar.py           # Sidebar settings panel
+├── tabs.py              # Tab 1 (Webcam) and Tab 2 (Video Upload) logic
+├── styles.css           # External CSS for UI styling
+└── README.md            # This file
 ```
 
-## Project Structure
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
 
 ```bash
-autonomous_recon/
-│
-├── 📄 main.py                 # Streamlit entry point (UI + detection pipeline)
-├── 📄 requirements.txt       # Python dependencies
-├── 🎨 styles.css            # Custom SaaS styling
-│
-├── 📂 core/
-│   ├── 📄 detector.py       # YOLOv8 detection logic
-│   └── 📄 tracker.py        # Persistent object tracking algorithms
-│
-├── 📂 ui/
-│   ├── 📄 draw_utils.py     # Bounding box & overlay rendering
-│   └── 📄 components.py     # Sidebar + reusable UI components
-│
-└── 📂 config/
-    └── 📄 classes.py        # COCO class definitions + color mapping
-
+git clone https://github.com/your-username/yolov8-detection-dashboard.git
+cd yolov8-detection-dashboard
 ```
 
----
-
-## Installation
-
-### 1️⃣ Clone the Repository
-
-```bash
-# HTTPS
-git clone https://github.com/nidhinkumar07/autonomous_recon.git
-
-# SSH
-git clone git@github.com:nidhinkumar07/autonomous_recon.git
-
-cd autonomous_recon
-```
-
-### 2️⃣ Create Virtual Environment (Recommended)
-
-```bash
-# Windows (CMD/PowerShell)
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
-
-# (Optional) Upgrade pip
-python -m pip install --upgrade pip
-```
-
-### 3️⃣ Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## ▶️ Run the Application
+### 3. Run the App
 
 ```bash
-streamlit run app.py
-```
-
-Then open your browser at:
-
-```
-http://localhost:8501
+streamlit run main.py
 ```
 
 ---
 
-## How It Works (High Level)
+## 📦 Requirements
 
-1. **YOLOv8** detects objects per frame
-2. **ObjectTracker** assigns or matches IDs using IoU
-3. Active objects are tracked frame‑by‑frame
-4. Live counts are computed **only from visible objects**
-5. Streamlit overlays boxes, IDs, and counts in real time
+Create a `requirements.txt` with the following:
 
----
+```
+streamlit
+opencv-python
+numpy
+Pillow
+ultralytics
+```
 
-## Object Tracking Logic
-
-- Each detection is matched to an existing object using **IoU**
-- If no match is found → a new ID is created
-- Objects are removed only after being missing for multiple frames
-- Counts reflect **current frame only**, not historical totals
+> **Note:** If YOLOv8 (`ultralytics`) is not installed or the model file is unavailable, the app automatically falls back to **realistic dummy detections** for testing purposes.
 
 ---
 
-## Output Examples
+## 🧩 Module Breakdown
 
-- `3 Persons Detected`
-- `Live Objects Panel`:
+### `main.py`
 
-  ```
-  Person : 3
-  Car    : 1
-  Bottle : 2
-  ```
+The entry point. Sets the Streamlit page config (must be the very first Streamlit command), suppresses warnings, loads CSS, renders the title, initializes session state, and calls the sidebar and tab renderers.
+
+### `tracker.py`
+
+Contains:
+
+- `COCO_CLASSES` — list of 80 COCO dataset class names
+- `ObjectTracker` — IoU + center-distance based multi-object tracker with:
+  - Persistent object IDs across frames
+  - Missing-frame tolerance (configurable)
+  - Per-class active counts
+  - Full tracking history and summary generation
+
+### `detection.py`
+
+Contains:
+
+- `load_yolo_model()` — loads `yolov8n.pt` via Ultralytics, falls back to `None` if unavailable
+- `detect_with_yolo(model, image)` — runs inference or generates realistic dummy detections
+- `filter_detections(detections)` — filters by class preference and confidence threshold
+- `draw_detections(frame, tracked_data, frame_number, source)` — draws bounding boxes, labels, IDs, and the live count overlay onto the frame
+
+### `ui_components.py`
+
+Contains:
+
+- `load_css_from_file(file_path)` — reads and injects `styles.css`; falls back gracefully if not found
+- `display_summary()` — renders the comprehensive per-class tracking summary with expandable object details
+
+### `session_state.py`
+
+Contains `init_session_state()` which initializes all `st.session_state` variables including detection preferences, visualization settings, tracker instance, and processing flags.
+
+### `sidebar.py`
+
+Contains `render_sidebar()` which renders the full settings sidebar including detection class checkboxes, visualization toggles, confidence/frame-skip/box-thickness sliders, and the color legend.
+
+### `tabs.py`
+
+Contains `render_tabs()` which renders:
+
+- **Tab 1 — Live Webcam:** start/stop webcam, frame capture loop, detection, tracking, stats display
+- **Tab 2 — Upload Video:** file uploader, video preview, start/stop processing, per-frame progress bar, stats display
 
 ---
 
-## Reset Behavior
+## ⚙️ Configuration Options (via Sidebar)
 
-- Tracker resets automatically when:
-  - Starting Webcam Detection
-  - Starting Video Processing
+| Setting              | Description                            | Default |
+| -------------------- | -------------------------------------- | ------- |
+| Persons              | Detect people                          | ✅ On   |
+| Vehicles             | Detect cars, trucks, buses, etc.       | ✅ On   |
+| Animals              | Detect dogs, cats, birds, etc.         | ❌ Off  |
+| All Classes          | Detect everything                      | ❌ Off  |
+| Show Labels          | Show class name on boxes               | ✅ On   |
+| Show Confidence      | Show confidence score on boxes         | ✅ On   |
+| Show Object IDs      | Show unique tracking ID on boxes       | ✅ On   |
+| Confidence Threshold | Minimum confidence to show a detection | 0.5     |
+| Frame Skip           | Process every Nth frame                | 2       |
+| Box Thickness        | Bounding box line thickness            | 2       |
 
-(IDs remain consistent _within_ each session)
+---
+
+## 🎨 Detection Colors
+
+| Category    | Color     |
+| ----------- | --------- |
+| 👤 Persons  | 🟢 Green  |
+| 🚗 Vehicles | 🔵 Blue   |
+| 🐾 Animals  | 🔴 Red    |
+| 📦 Other    | 🟡 Yellow |
 
 ---
 
-## Future Enhancements
+## 🛠️ Supported Video Formats
 
-- Zone‑based entry / exit counting
-- Heatmaps & dwell‑time analysis
-- DeepSORT / ByteTrack integration
-- Export analytics as CSV / JSON
-- Multi‑camera support
+`MP4`, `AVI`, `MOV`, `MKV`, `FLV`, `MPG`, `MPEG`, `WMV`
 
 ---
+
+## 📝 Notes
+
+- The `styles.css` file must be present in the same directory as `main.py` for full styling. A minimal fallback is shown if it is missing.
+- Object IDs are **globally persistent** — they do not reset between webcam and video sessions, ensuring unique IDs throughout the app's lifetime.
+- The tracker preserves full bounding box and confidence history for every object, even after it becomes inactive.
+
+---
+
+## 📄 License
+
+MIT License. Feel free to use, modify, and distribute.
