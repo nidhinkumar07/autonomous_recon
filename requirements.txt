@@ -6,7 +6,12 @@ torch==2.1.0
 pillow==10.1.0
 
 # Streamlit Dashboard
-streamlit==1.29.0
+# st.fragment (required for flicker-free webcam/video) was added in 1.33.0
+streamlit>=1.33.0
+
+# starlette 1.0.0 removed DEFAULT_EXCLUDED_CONTENT_TYPES from its gzip
+# middleware, breaking Streamlit's internal server. Pin below 1.0.0.
+starlette<1.0.0
 
 # Utilities
 pyyaml==6.0.1

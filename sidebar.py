@@ -128,11 +128,11 @@ def render_sidebar():
             </div>
             <div style="display:flex;align-items:center;margin-bottom:0.25rem;">
                 <div style="width:12px;height:12px;border-radius:50%;background:#3B82F6;margin-right:8px;"></div>
-                <span style="font-size:0.85rem;">Vehicles</span>
+                <span style="font-size:0.85rem;">Animals</span>
             </div>
             <div style="display:flex;align-items:center;margin-bottom:0.25rem;">
                 <div style="width:12px;height:12px;border-radius:50%;background:#EF4444;margin-right:8px;"></div>
-                <span style="font-size:0.85rem;">Animals</span>
+                <span style="font-size:0.85rem;">Vehicles</span>
             </div>
             <div style="display:flex;align-items:center;">
                 <div style="width:12px;height:12px;border-radius:50%;background:#F59E0B;margin-right:8px;"></div>

@@ -178,14 +178,18 @@ def filter_detections(detections: list) -> list:
 
 
 def draw_detections(frame: np.ndarray, tracked_data: dict,
-                    frame_number: int = 0, source: str = "webcam"):
+                    frame_number: int = 0, source: str = "webcam",
+                    draw_cfg: dict = None, object_data_map: dict = None):
     """
     Draw bounding boxes and the heads-up counts overlay onto the frame.
 
-    - avg_confidence is read from the tracker's stored running mean (no np.mean).
-    - The semi-transparent overlay is blended only on the ROI slice, not the
-      whole frame, avoiding a full-resolution addWeighted copy.
-    - All session-state flags are cached in locals before the per-object loop.
+    draw_cfg: optional dict with keys show_labels, show_ids, show_confidence,
+              box_thickness.  When None, values are read from st.session_state
+              (main-thread usage).  Pass a plain dict when calling from a
+              background thread that has no Streamlit ScriptRunContext.
+
+    object_data_map: optional pre-fetched tracker.object_data dict.  When None,
+                     read from st.session_state.object_tracker.object_data.
     """
     frame_copy = frame.copy()
     height, width = frame_copy.shape[:2]
@@ -194,12 +198,20 @@ def draw_detections(frame: np.ndarray, tracked_data: dict,
     current_counts  = tracked_data.get("current_counts", {})
     total_objects   = tracked_data.get("total_objects", 0)
 
-    # Read session flags once — avoids repeated attribute lookup in the loop
-    show_labels     = st.session_state.show_labels
-    show_ids        = st.session_state.show_ids
-    show_confidence = st.session_state.show_confidence
-    box_thickness   = st.session_state.box_thickness
-    object_data_map = st.session_state.object_tracker.object_data
+    # Read display flags — from caller-supplied dict (thread-safe) or session_state
+    if draw_cfg is not None:
+        show_labels     = draw_cfg.get('show_labels',     True)
+        show_ids        = draw_cfg.get('show_ids',        True)
+        show_confidence = draw_cfg.get('show_confidence', True)
+        box_thickness   = draw_cfg.get('box_thickness',   2)
+    else:
+        show_labels     = st.session_state.show_labels
+        show_ids        = st.session_state.show_ids
+        show_confidence = st.session_state.show_confidence
+        box_thickness   = st.session_state.box_thickness
+
+    if object_data_map is None:
+        object_data_map = st.session_state.object_tracker.object_data
 
     # Frame border + source watermark
     src_text = "Webcam" if source == "webcam" else "Video"
